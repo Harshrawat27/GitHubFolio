@@ -2,7 +2,7 @@
 
 GitHubFolio is a modern, sleek application that transforms your GitHub profile into a beautiful portfolio website in seconds. Simply enter your GitHub username, and GitHubFolio will generate a personalized portfolio showcasing your projects, skills, and activity.
 
-![GitHubFolio](https://raw.githubusercontent.com/username/github-profile-analyzer/main/public/screenshot.png)
+![GitHubFolio](https://raw.githubusercontent.com/Harshrawat27/githubfolio/refs/heads/main/public/githubfolio.png)
 
 ## ✨ Features
 
