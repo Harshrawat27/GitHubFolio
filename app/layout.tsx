@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { JetBrains_Mono, Inter } from 'next/font/google';
 import './globals.css';
+import { Analytics } from '@vercel/analytics/next';
 
 // Font for code and technical elements
 const jetbrainsMono = JetBrains_Mono({
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body className='bg-black text-white font-sans min-h-screen flex flex-col'>
         <main className='flex-grow container mx-auto max-w-[700px] px-4 py-8'>
           {children}
+          <Analytics />
         </main>
 
         <div className='fixed bottom-4 right-4'>
