@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang='en' className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className='bg-black text-white font-sans min-h-screen flex flex-col'>
-        <main className='flex-grow container mx-auto max-w-[800px] px-4 py-8'>
+        <main className='flex-grow container mx-auto max-w-[700px] px-4 py-8'>
           {children}
         </main>
 

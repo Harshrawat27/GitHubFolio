@@ -8,6 +8,7 @@ import { GitHubUser, Repository } from '@/types';
 import FeaturedProjects from '@/components/FeaturedProjects';
 import AboutMe from '@/components/AboutMe';
 import BottomNavigation from '@/components/BottomNavigation';
+// import ContributionGraph from '@/components/ContributionGraph'; // Import the ContributionGraph component
 
 export default function ProfilePage() {
   const params = useParams();
@@ -229,6 +230,9 @@ export default function ProfilePage() {
 
       {/* About Me Section */}
       <AboutMe user={userData} />
+
+      {/* Contribution Graph - Add the component here */}
+      {/* <ContributionGraph username={username} token={token} /> */}
 
       {/* Featured Projects */}
       <FeaturedProjects repos={featuredRepos} />

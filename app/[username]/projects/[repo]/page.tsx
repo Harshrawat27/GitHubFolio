@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import BottomNavigation from '@/components/BottomNavigation';
-import { Repository } from '@/types';
+// import { Repository } from '@/types';
 
 // Updated interface that won't conflict
 interface RepoDetails {

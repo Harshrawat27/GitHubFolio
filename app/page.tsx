@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function HomePage() {
   const [username, setUsername] = useState('');
@@ -20,7 +21,7 @@ export default function HomePage() {
     <div className='min-h-screen flex flex-col items-center justify-center px-4 py-20'>
       <div className='text-center mb-12'>
         <div className='flex items-center justify-center gap-3 mb-6'>
-          <div className='w-8 h-8 bg-[#8976EA] rounded-lg'></div>
+          <Image alt='logo' src='/githubfoliologo.png' width={40} height={40} />
           <h1 className='text-3xl font-bold font-mono'>GitHubFolio</h1>
         </div>
 
