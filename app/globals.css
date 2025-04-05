@@ -3,13 +3,27 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-rgb: 243, 244, 246;
+  --primary: #8976ea;
+  --primary-dark: #6f5bd0;
+  --primary-light: #a595f0;
+  --background: #000000;
+  --foreground: #ffffff;
+  --card-bg: #111111;
+  --card-border: #222222;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  color: var(--foreground);
+  background: var(--background);
+}
+
+.font-sans {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-mono {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, monospace;
 }
 
 @layer utilities {
@@ -18,5 +32,29 @@ body {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  .title-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#8976EA] to-[#A595F0];
+  }
+
+  .card {
+    @apply bg-[#111111] border border-[#222222] rounded-lg p-6 transition-all duration-300;
+  }
+
+  .card:hover {
+    @apply border-[#8976EA] border-opacity-50 shadow-[0_0_15px_rgba(137,118,234,0.15)];
+  }
+
+  .button-primary {
+    @apply bg-[#8976EA] hover:bg-[#6F5BD0] text-white px-4 py-2 rounded-md font-medium transition-colors;
+  }
+
+  .button-secondary {
+    @apply bg-[#111111] border border-[#222222] hover:border-[#8976EA] text-white px-4 py-2 rounded-md font-medium transition-colors;
+  }
+
+  .input-field {
+    @apply bg-[#111111] border border-[#222222] text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8976EA] focus:border-transparent transition-all;
   }
 }

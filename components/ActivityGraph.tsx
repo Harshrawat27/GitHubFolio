@@ -162,23 +162,38 @@ export default function ActivityGraph({ username, token }: ActivityGraphProps) {
     }
   }, [username, token]);
 
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className='bg-[#191919] border border-[#222222] px-3 py-2 rounded-md shadow-md'>
+          <p className='font-mono text-sm text-[#8976EA]'>{`${label}`}</p>
+          <p className='text-xs text-gray-300'>{`Commits: ${payload[0].value}`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <div className='bg-white p-6 rounded-lg shadow-md'>
-      <h2 className='text-xl font-semibold mb-4'>Commit Activity</h2>
+    <div className='card'>
+      <h2 className='text-xl font-bold mb-6 flex items-center gap-2'>
+        <span className='w-1 h-6 bg-[#8976EA] rounded-md'></span>
+        Commit Activity
+      </h2>
 
       {loading ? (
         <div className='h-64 flex items-center justify-center'>
-          <div className='animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent'></div>
+          <div className='animate-spin h-8 w-8 border-2 border-[#8976EA] rounded-full border-t-transparent'></div>
         </div>
       ) : error ? (
-        <div className='h-64 flex items-center justify-center text-red-500'>
+        <div className='h-64 flex items-center justify-center text-red-400'>
           {error}
         </div>
       ) : activityData.length === 0 ? (
         <div className='h-64 flex items-center justify-center text-gray-500'>
           <div className='text-center'>
             <p>No activity data available</p>
-            <p className='text-sm mt-2'>
+            <p className='text-sm mt-2 text-gray-600'>
               Try refreshing the page or check a different profile
             </p>
           </div>
@@ -190,36 +205,43 @@ export default function ActivityGraph({ username, token }: ActivityGraphProps) {
               data={activityData}
               margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />
-              <XAxis dataKey='date' tick={{ fontSize: 12 }} tickLine={false} />
+              <CartesianGrid
+                strokeDasharray='3 3'
+                stroke='#222222'
+                vertical={false}
+              />
+              <XAxis
+                dataKey='date'
+                tick={{ fontSize: 12, fill: '#9ca3af' }}
+                tickLine={false}
+                axisLine={{ stroke: '#333333' }}
+              />
               <YAxis
                 tickLine={false}
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 12, fill: '#9ca3af' }}
                 allowDecimals={false}
+                axisLine={{ stroke: '#333333' }}
               />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '4px',
-                  padding: '8px',
-                }}
-                labelStyle={{ fontWeight: 'bold', marginBottom: '4px' }}
-              />
+              <Tooltip content={<CustomTooltip />} />
               <Line
                 type='monotone'
                 dataKey='commits'
-                stroke='#3b82f6'
+                stroke='#8976EA'
                 strokeWidth={2}
-                dot={{ r: 4, strokeWidth: 2 }}
-                activeDot={{ r: 6, strokeWidth: 2 }}
+                dot={{
+                  r: 4,
+                  strokeWidth: 2,
+                  fill: '#191919',
+                  stroke: '#8976EA',
+                }}
+                activeDot={{ r: 6, strokeWidth: 2, fill: '#8976EA' }}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
       )}
 
-      <div className='mt-4 text-sm text-gray-600'>
+      <div className='mt-4 text-xs text-gray-500'>
         {activityData.length > 0 ? (
           <p>Showing commit activity based on repository activity.</p>
         ) : !loading && !error ? (

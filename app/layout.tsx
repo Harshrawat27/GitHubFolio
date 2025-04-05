@@ -1,12 +1,24 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { JetBrains_Mono, Inter } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+// Font for code and technical elements
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+});
+
+// Font for UI and general text
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: 'GitHub Profile Analyzer',
-  description: 'Analyze GitHub profiles and visualize user activity',
+  title: 'GitHubFolio | Developer Portfolio',
+  description: 'Developer portfolio generated from GitHub profile',
 };
 
 export default function RootLayout({
@@ -15,22 +27,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang='en'>
-      <body className={inter.className}>
-        <header className='bg-gray-800 text-white p-6'>
-          <div className='container mx-auto'>
-            <h1 className='text-3xl font-bold'>GitHub Profile Analyzer</h1>
-            <p className='mt-2'>Visualize GitHub activity and statistics</p>
-          </div>
-        </header>
+    <html lang='en' className={`${inter.variable} ${jetbrainsMono.variable}`}>
+      <body className='bg-black text-white font-sans min-h-screen flex flex-col'>
+        <main className='flex-grow container mx-auto max-w-[800px] px-4 py-8'>
+          {children}
+        </main>
 
-        <main className='container mx-auto p-6 min-h-screen'>{children}</main>
-
-        <footer className='bg-gray-800 text-white p-6'>
-          <div className='container mx-auto text-center'>
-            <p>GitHub Profile Analyzer © {new Date().getFullYear()}</p>
+        <div className='fixed bottom-4 right-4'>
+          <div className='bg-[#8976EA] bg-opacity-10 backdrop-blur-sm border border-[#8976EA] border-opacity-30 rounded-lg px-3 py-2 text-xs text-[#8976EA]'>
+            <span>Made with </span>
+            <span className='font-bold'>GitHubFolio</span>
           </div>
-        </footer>
+        </div>
       </body>
     </html>
   );

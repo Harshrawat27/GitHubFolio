@@ -216,34 +216,42 @@ export default function AIAnalysis({ user, repos }: AIAnalysisProps) {
   }, [user, repos]);
 
   return (
-    <div className='bg-white p-6 rounded-lg shadow-md'>
-      <h2 className='text-xl font-semibold mb-4'>AI Developer Insights</h2>
+    <div className='card'>
+      <h2 className='text-xl font-bold mb-6 flex items-center gap-2'>
+        <span className='w-1 h-6 bg-[#8976EA] rounded-md'></span>
+        Developer Insights
+      </h2>
 
       {loading ? (
         <div className='py-8 flex items-center justify-center'>
           <div className='flex flex-col items-center'>
-            <div className='animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent mb-4'></div>
+            <div className='animate-spin h-8 w-8 border-2 border-[#8976EA] rounded-full border-t-transparent mb-4'></div>
             <p className='text-gray-500'>Analyzing developer profile...</p>
           </div>
         </div>
       ) : error ? (
-        <div className='text-red-500 py-4'>{error}</div>
+        <div className='text-red-400 py-4'>{error}</div>
       ) : (
-        <div className='prose prose-blue max-w-none'>
+        <div className='space-y-6'>
           {analysis.split('\n\n').map((paragraph, index) => {
             if (paragraph.startsWith('**')) {
               const [title, content] = paragraph.split('**: ');
               return (
-                <div key={index} className='mb-4'>
-                  <h3 className='text-lg font-medium'>
+                <div
+                  key={index}
+                  className='bg-[#191919] border border-[#222222] rounded-md p-4 hover:border-[#8976EA] hover:border-opacity-30 transition-all duration-300'
+                >
+                  <h3 className='text-lg font-medium text-[#8976EA] mb-2'>
                     {title.replace(/\*\*/g, '')}
                   </h3>
-                  <p>{content}</p>
+                  <p className='text-gray-300 text-sm leading-relaxed'>
+                    {content}
+                  </p>
                 </div>
               );
             }
             return (
-              <p key={index} className='mb-4'>
+              <p key={index} className='text-gray-300'>
                 {paragraph}
               </p>
             );
@@ -251,11 +259,10 @@ export default function AIAnalysis({ user, repos }: AIAnalysisProps) {
         </div>
       )}
 
-      <div className='mt-4 pt-4 border-t text-xs text-gray-500'>
+      <div className='mt-6 pt-4 border-t border-[#222222] text-xs text-gray-600'>
         <p>
           This analysis is generated using AI based on public GitHub data and
-          provides general insights about the developer profile and activity
-          patterns.
+          provides general insights about the developer profile.
         </p>
       </div>
     </div>

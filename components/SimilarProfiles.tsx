@@ -247,17 +247,20 @@ export default function SimilarProfiles({
   }, [user, repos, token]);
 
   return (
-    <div className='bg-white p-6 rounded-lg shadow-md'>
-      <h2 className='text-xl font-semibold mb-4'>Similar GitHub Profiles</h2>
+    <div className='card'>
+      <h2 className='text-xl font-bold mb-6 flex items-center gap-2'>
+        <span className='w-1 h-6 bg-[#8976EA] rounded-md'></span>
+        Similar Developers
+      </h2>
 
       {loading ? (
         <div className='py-8 flex items-center justify-center'>
-          <div className='animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent'></div>
+          <div className='animate-spin h-8 w-8 border-2 border-[#8976EA] rounded-full border-t-transparent'></div>
         </div>
       ) : error ? (
-        <div className='text-red-500 py-4'>{error}</div>
+        <div className='text-red-400 py-4'>{error}</div>
       ) : similarUsers.length === 0 ? (
-        <div className='text-gray-500 py-4'>
+        <div className='text-gray-500 py-4 text-center'>
           No similar profiles found. This could be due to API rate limits or
           insufficient data.
         </div>
@@ -266,32 +269,35 @@ export default function SimilarProfiles({
           {similarUsers.map((simUser) => (
             <div
               key={simUser.login}
-              className='border rounded-lg p-4 flex flex-col items-center hover:bg-blue-50 cursor-pointer'
+              className='bg-[#191919] border border-[#222222] rounded-lg p-4 flex flex-col items-center hover:border-[#8976EA] hover:border-opacity-50 hover:translate-y-[-5px] transition-all duration-300 cursor-pointer'
               onClick={() => onProfileSelect(simUser.login)}
             >
-              <Image
-                src={simUser.avatar_url}
-                alt={simUser.login}
-                width={80}
-                height={80}
-                className='rounded-full border-2 border-gray-200'
-              />
-              <h3 className='font-medium mt-2'>
+              <div className='relative w-16 h-16 rounded-full overflow-hidden border-2 border-[#333333]'>
+                <Image
+                  src={simUser.avatar_url}
+                  alt={simUser.login}
+                  fill
+                  className='object-cover'
+                />
+              </div>
+              <h3 className='font-medium mt-3 text-white'>
                 {simUser.name || simUser.login}
               </h3>
-              <p className='text-sm text-gray-500'>@{simUser.login}</p>
-              <p className='text-xs text-gray-600 mt-2 text-center'>
-                {simUser.similarity_reason}
+              <p className='text-sm text-[#8976EA] font-mono'>
+                @{simUser.login}
               </p>
+              <div className='mt-3 px-3 py-1 bg-black bg-opacity-30 rounded-full text-xs text-gray-400'>
+                {simUser.similarity_reason}
+              </div>
             </div>
           ))}
         </div>
       )}
 
-      <div className='mt-4 text-xs text-gray-500'>
+      <div className='mt-6 pt-4 border-t border-[#222222] text-xs text-gray-600'>
         <p>
-          Similar profiles are suggested based on common languages, topics, and
-          social connections. Click on a profile to explore it.
+          Similar developers are suggested based on common languages, topics,
+          and social connections. Click on a profile to explore.
         </p>
       </div>
     </div>

@@ -160,33 +160,39 @@ export default function CommitHistory({
   };
 
   return (
-    <div className='bg-white p-6 rounded-lg shadow-md'>
-      <h2 className='text-xl font-semibold mb-4'>Recent Activity</h2>
+    <div className='card'>
+      <h2 className='text-xl font-bold mb-6 flex items-center gap-2'>
+        <span className='w-1 h-6 bg-[#8976EA] rounded-md'></span>
+        Recent Activity
+      </h2>
 
       {loading ? (
         <div className='h-64 flex items-center justify-center'>
-          <div className='animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent'></div>
+          <div className='animate-spin h-8 w-8 border-2 border-[#8976EA] rounded-full border-t-transparent'></div>
         </div>
       ) : error ? (
-        <div className='text-red-500 py-4'>{error}</div>
+        <div className='text-red-400 py-4'>{error}</div>
       ) : commits.length === 0 ? (
         <div className='text-gray-500 py-4'>No recent activity found</div>
       ) : (
-        <ul className='space-y-4 divide-y divide-gray-100'>
+        <ul className='space-y-4 divide-y divide-[#222222]'>
           {commits.map((commit) => (
             <li key={commit.sha} className='pt-4 first:pt-0'>
               <div className='flex items-start gap-3'>
                 <div className='mt-1 flex-shrink-0'>
                   {commit.author?.avatar_url ? (
-                    <Image
-                      src={commit.author.avatar_url}
-                      alt={commit.author.login}
-                      width={24}
-                      height={24}
-                      className='rounded-full'
-                    />
+                    <div className='w-6 h-6 relative rounded-full overflow-hidden border border-[#333333]'>
+                      <Image
+                        src={commit.author.avatar_url}
+                        alt={commit.author.login}
+                        fill
+                        className='object-cover'
+                      />
+                    </div>
                   ) : (
-                    <GitCommitIcon className='h-5 w-5 text-gray-500' />
+                    <div className='w-6 h-6 bg-[#191919] rounded-full flex items-center justify-center border border-[#333333]'>
+                      <GitCommitIcon className='h-3 w-3 text-[#8976EA]' />
+                    </div>
                   )}
                 </div>
                 <div className='flex-grow min-w-0'>
@@ -195,12 +201,12 @@ export default function CommitHistory({
                       href={commit.repo_url}
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='font-medium text-blue-600 hover:underline'
+                      className='font-medium text-[#8976EA] hover:text-[#A595F0] transition-colors font-mono text-sm'
                     >
                       {commit.repository}
                     </a>
                     <span className='text-gray-500'>•</span>
-                    <span className='text-sm text-gray-500'>
+                    <span className='text-xs text-gray-500'>
                       {formatDate(commit.commit.author.date)}
                     </span>
                   </div>
@@ -208,7 +214,7 @@ export default function CommitHistory({
                     href={commit.html_url}
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='mt-1 block text-sm text-gray-800 line-clamp-2 hover:text-blue-600'
+                    className='mt-1 block text-sm text-gray-300 line-clamp-2 hover:text-[#8976EA] transition-colors'
                   >
                     {commit.commit.message}
                   </a>
@@ -219,7 +225,7 @@ export default function CommitHistory({
         </ul>
       )}
 
-      <div className='mt-4 text-sm text-gray-600'>
+      <div className='mt-4 text-xs text-gray-600'>
         {commits.length > 0 && (
           <p>Showing the most recent {commits.length} activities on GitHub.</p>
         )}

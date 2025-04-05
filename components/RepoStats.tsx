@@ -58,21 +58,28 @@ export default function RepoStats({ repos }: RepoStatsProps) {
   }, [repos, sortBy]);
 
   return (
-    <div className='bg-white p-6 rounded-lg shadow-md'>
-      <div className='flex justify-between items-center mb-4'>
-        <h2 className='text-xl font-semibold'>Repository Stats</h2>
+    <div className='card'>
+      <div className='flex justify-between items-center mb-6'>
+        <h2 className='text-xl font-bold flex items-center gap-2'>
+          <span className='w-1 h-6 bg-[#8976EA] rounded-md'></span>
+          Repository Stats
+        </h2>
         <div className='flex gap-2'>
           <button
-            className={`px-3 py-1 text-sm rounded-md ${
-              sortBy === 'stars' ? 'bg-blue-600 text-white' : 'bg-gray-200'
+            className={`px-3 py-1 text-xs rounded-md border transition-colors ${
+              sortBy === 'stars'
+                ? 'bg-[#8976EA] text-white border-[#8976EA]'
+                : 'bg-[#191919] text-gray-300 border-[#222222] hover:border-[#8976EA] hover:text-white'
             }`}
             onClick={() => setSortBy('stars')}
           >
             Most Starred
           </button>
           <button
-            className={`px-3 py-1 text-sm rounded-md ${
-              sortBy === 'updated' ? 'bg-blue-600 text-white' : 'bg-gray-200'
+            className={`px-3 py-1 text-xs rounded-md border transition-colors ${
+              sortBy === 'updated'
+                ? 'bg-[#8976EA] text-white border-[#8976EA]'
+                : 'bg-[#191919] text-gray-300 border-[#222222] hover:border-[#8976EA] hover:text-white'
             }`}
             onClick={() => setSortBy('updated')}
           >
@@ -82,36 +89,38 @@ export default function RepoStats({ repos }: RepoStatsProps) {
       </div>
 
       <div className='grid grid-cols-2 gap-4 mb-6'>
-        <div className='p-4 bg-blue-50 rounded-lg'>
+        <div className='p-4 bg-[#191919] rounded-lg border border-[#222222]'>
           <div className='flex items-center gap-2'>
             <StarIcon className='h-5 w-5 text-yellow-500' />
             <span className='text-xl font-bold'>{totalStars}</span>
           </div>
-          <div className='text-sm text-gray-600'>Total Stars</div>
+          <div className='text-sm text-gray-400'>Total Stars</div>
         </div>
 
-        <div className='p-4 bg-blue-50 rounded-lg'>
+        <div className='p-4 bg-[#191919] rounded-lg border border-[#222222]'>
           <div className='flex items-center gap-2'>
-            <GitForkIcon className='h-5 w-5 text-gray-600' />
+            <GitForkIcon className='h-5 w-5 text-gray-400' />
             <span className='text-xl font-bold'>{totalForks}</span>
           </div>
-          <div className='text-sm text-gray-600'>Total Forks</div>
+          <div className='text-sm text-gray-400'>Total Forks</div>
         </div>
       </div>
 
       <div className='mb-6'>
-        <h3 className='text-lg font-medium mb-2'>Top Languages</h3>
+        <h3 className='text-lg font-medium mb-3 text-gray-200'>
+          Top Languages
+        </h3>
         <div className='flex flex-wrap gap-2'>
           {languageStats.map(({ language, count, color }) => (
             <div
               key={language}
-              className='flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full'
+              className='flex items-center gap-2 px-3 py-1 bg-[#191919] border border-[#222222] rounded-full'
             >
               <div
                 className='w-3 h-3 rounded-full'
                 style={{ backgroundColor: color || '#ccc' }}
               />
-              <span>{language}</span>
+              <span className='text-sm'>{language}</span>
               <span className='text-xs text-gray-500'>({count})</span>
             </div>
           ))}
@@ -119,29 +128,32 @@ export default function RepoStats({ repos }: RepoStatsProps) {
       </div>
 
       <div>
-        <h3 className='text-lg font-medium mb-2'>
+        <h3 className='text-lg font-medium mb-3 text-gray-200'>
           {sortBy === 'stars' ? 'Top Repositories' : 'Recently Updated'}
         </h3>
         <ul className='space-y-3'>
           {sortedRepos.map((repo) => (
-            <li key={repo.id} className='border-b pb-2 last:border-0'>
+            <li
+              key={repo.id}
+              className='border-b border-[#222222] pb-3 last:border-0'
+            >
               <a
                 href={repo.html_url}
                 target='_blank'
                 rel='noopener noreferrer'
-                className='font-medium text-blue-600 hover:underline'
+                className='font-medium text-[#8976EA] hover:text-[#A595F0] transition-colors'
               >
                 {repo.name}
               </a>
               {repo.description && (
-                <p className='text-sm text-gray-600 line-clamp-2'>
+                <p className='text-sm text-gray-400 line-clamp-2 mt-1'>
                   {repo.description}
                 </p>
               )}
-              <div className='flex items-center gap-4 mt-1'>
+              <div className='flex items-center gap-4 mt-2'>
                 <div className='flex items-center gap-1 text-sm'>
                   <StarIcon className='h-4 w-4 text-yellow-500' />
-                  <span>{repo.stargazers_count}</span>
+                  <span className='text-gray-300'>{repo.stargazers_count}</span>
                 </div>
                 {repo.language && (
                   <div className='flex items-center gap-1 text-sm'>
@@ -152,7 +164,7 @@ export default function RepoStats({ repos }: RepoStatsProps) {
                           getLanguageColor(repo.language) || '#ccc',
                       }}
                     />
-                    <span>{repo.language}</span>
+                    <span className='text-gray-400'>{repo.language}</span>
                   </div>
                 )}
               </div>
