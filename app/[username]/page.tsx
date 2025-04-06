@@ -106,8 +106,7 @@ export default function ProfilePage() {
           // Be careful with exposing tokens in production code
           const token =
             localStorage.getItem('github_token') ||
-            process.env.NEXT_PUBLIC_GITHUB_TOKEN ||
-            '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';
+            process.env.NEXT_PUBLIC_GITHUB_TOKEN;
 
           const res = await fetch('https://api.github.com/graphql', {
             method: 'POST',
