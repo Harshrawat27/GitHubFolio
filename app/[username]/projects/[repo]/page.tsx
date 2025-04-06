@@ -1,10 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import BottomNavigation from '@/components/BottomNavigation';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
 // import { Repository } from '@/types';
 
 // Updated interface that won't conflict
@@ -112,8 +116,18 @@ export default function ProjectDetailsPage() {
 
           if (readmeResponse.ok) {
             const readmeData = await readmeResponse.json();
-            // README content is base64 encoded
-            const decodedContent = atob(readmeData.content);
+            // README content is base64 encoded - use TextDecoder for proper UTF-8 decoding
+            const content = readmeData.content;
+            const byteCharacters = atob(content.replace(/\s/g, ''));
+            const byteNumbers = new Array(byteCharacters.length);
+
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+
+            const byteArray = new Uint8Array(byteNumbers);
+            const decodedContent = new TextDecoder('utf-8').decode(byteArray);
+
             setReadme(decodedContent);
           }
         } catch (error) {
@@ -214,6 +228,23 @@ export default function ProjectDetailsPage() {
     };
 
     return colors[language] || '#8b949e';
+  };
+
+  // Custom renderer for images to handle GitHub relative URLs
+  const transformImageUri = (src: string) => {
+    if (src.startsWith('http')) {
+      return src;
+    }
+
+    // Handle relative image paths
+    const repoBaseUrl = `https://raw.githubusercontent.com/${username}/${repoName}/${
+      repoData?.default_branch || 'main'
+    }`;
+
+    // Remove leading slash if present
+    const cleanSrc = src.startsWith('/') ? src.substring(1) : src;
+
+    return `${repoBaseUrl}/${cleanSrc}`;
   };
 
   if (loading) {
@@ -461,13 +492,143 @@ export default function ProjectDetailsPage() {
         </div>
       )}
 
-      {/* README */}
+      {/* README with proper Markdown rendering */}
       {readme && (
         <div className='mb-12'>
           <h2 className='text-xl font-bold mb-4'>README</h2>
 
-          <div className='bg-[#111111] border border-[#222222] rounded-lg p-6 prose prose-invert max-w-none'>
-            <pre className='whitespace-pre-wrap text-sm'>{readme}</pre>
+          <div className='bg-[#111111] border border-[#222222] rounded-lg p-6 prose prose-invert prose-a:text-[#8976EA] prose-headings:border-b prose-headings:border-[#222222] prose-headings:pb-2 max-w-none'>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeHighlight]}
+              components={{
+                img: ({ node, ...props }) => (
+                  <img
+                    {...props}
+                    src={transformImageUri(props.src || '')}
+                    className='max-w-full my-4 rounded-md'
+                    alt={props.alt || ''}
+                  />
+                ),
+                a: ({ node, ...props }) => (
+                  <a
+                    {...props}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='hover:underline'
+                  />
+                ),
+                pre: ({ node, ...props }: any) => {
+                  // We need to extract the actual code as a string
+                  const [copied, setCopied] = useState(false);
+
+                  // Get reference to the pre element
+                  const preRef = React.useRef<HTMLPreElement>(null);
+
+                  const copyToClipboard = () => {
+                    if (preRef.current) {
+                      // Get the text content from the pre element
+                      const codeElement = preRef.current.querySelector('code');
+                      const textToCopy = codeElement?.textContent || '';
+
+                      // Copy to clipboard
+                      navigator.clipboard.writeText(textToCopy);
+
+                      // Show copied confirmation
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }
+                  };
+
+                  return (
+                    <div className='relative group'>
+                      <pre
+                        {...props}
+                        ref={preRef}
+                        className='bg-[#191919] p-4 rounded-md overflow-x-auto text-sm my-4'
+                      />
+                      <button
+                        onClick={copyToClipboard}
+                        className='absolute top-2 right-2 bg-[#333333] hover:bg-[#444444] p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity'
+                        title='Copy code'
+                        aria-label='Copy code to clipboard'
+                      >
+                        {copied ? (
+                          <>
+                            <svg
+                              xmlns='http://www.w3.org/2000/svg'
+                              width='16'
+                              height='16'
+                              viewBox='0 0 24 24'
+                              fill='none'
+                              stroke='currentColor'
+                              strokeWidth='2'
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                            >
+                              <polyline points='20 6 9 17 4 12'></polyline>
+                            </svg>
+                            <span className='absolute top-10 right-0 bg-[#333333] text-white text-xs py-1 px-2 rounded'>
+                              Copied!
+                            </span>
+                          </>
+                        ) : (
+                          <svg
+                            xmlns='http://www.w3.org/2000/svg'
+                            width='16'
+                            height='16'
+                            viewBox='0 0 24 24'
+                            fill='none'
+                            stroke='currentColor'
+                            strokeWidth='2'
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                          >
+                            <rect
+                              x='9'
+                              y='9'
+                              width='13'
+                              height='13'
+                              rx='2'
+                              ry='2'
+                            ></rect>
+                            <path d='M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1'></path>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  );
+                },
+                code: ({ node, inline, ...props }: any) =>
+                  inline ? (
+                    <code
+                      {...props}
+                      className='bg-[#191919] px-1 py-0.5 rounded text-sm'
+                    />
+                  ) : (
+                    <code {...props} />
+                  ),
+                table: ({ node, ...props }) => (
+                  <div className='overflow-x-auto my-4'>
+                    <table {...props} className='border-collapse w-full' />
+                  </div>
+                ),
+                th: ({ node, ...props }) => (
+                  <th
+                    {...props}
+                    className='border border-[#333333] px-4 py-2 text-left'
+                  />
+                ),
+                td: ({ node, ...props }) => (
+                  <td
+                    {...props}
+                    className='border border-[#333333] px-4 py-2'
+                  />
+                ),
+              }}
+            >
+              {readme}
+            </ReactMarkdown>
           </div>
         </div>
       )}
