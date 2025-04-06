@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import RateLimitIndicator from '@/components/RateLimitIndicator';
 
 export default function HomePage() {
   const [username, setUsername] = useState('');
@@ -22,9 +23,7 @@ export default function HomePage() {
       <div className='text-center mb-12'>
         <div className='flex items-center justify-center gap-3 mb-6'>
           <Image alt='logo' src='/githubfoliologo.png' width={40} height={40} />
-          <h1 className='text-3xl font-bold font-mono'>
-            GitHub<span className='text-[#8976EA]'>Folio</span>
-          </h1>
+          <h1 className='text-3xl font-bold font-mono'>GitHubFolio</h1>
         </div>
 
         <h2 className='text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-white to-[#8976EA] bg-clip-text text-transparent'>
@@ -170,6 +169,9 @@ export default function HomePage() {
           githufolio.com/<span className='text-[#8976EA]'>username</span>
         </div>
       </div>
+
+      {/* GitHub API Rate Limit Indicator */}
+      <RateLimitIndicator />
     </div>
   );
 }

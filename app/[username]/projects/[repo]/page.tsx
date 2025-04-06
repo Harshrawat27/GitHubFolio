@@ -65,6 +65,10 @@ export default function ProjectDetailsPage() {
 
   const [repoData, setRepoData] = useState<RepoDetails | null>(null);
   const [readme, setReadme] = useState<string>('');
+  const [projectReadme, setProjectReadme] = useState<string>('');
+  const [viewMode, setViewMode] = useState<'technical' | 'project'>(
+    'technical'
+  );
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [languages, setLanguages] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
@@ -133,6 +137,37 @@ export default function ProjectDetailsPage() {
         } catch (error) {
           console.error('Error fetching README:', error);
           // Continue without README
+        }
+
+        // Try to fetch GitHubFolio.md for project view
+        try {
+          const projectReadmeResponse = await fetch(
+            `https://api.github.com/repos/${username}/${repoName}/contents/GitHubFolio.md`,
+            { headers }
+          );
+
+          if (projectReadmeResponse.ok) {
+            const projectReadmeData = await projectReadmeResponse.json();
+            // Content is base64 encoded
+            const content = projectReadmeData.content;
+            const byteCharacters = atob(content.replace(/\s/g, ''));
+            const byteNumbers = new Array(byteCharacters.length);
+
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+
+            const byteArray = new Uint8Array(byteNumbers);
+            const decodedContent = new TextDecoder('utf-8').decode(byteArray);
+
+            setProjectReadme(decodedContent);
+
+            // If we have a project readme, default to project view
+            setViewMode('project');
+          }
+        } catch (error) {
+          console.error('Error fetching GitHubFolio.md:', error);
+          // Continue without project readme
         }
 
         // Fetch contributors
@@ -493,9 +528,36 @@ export default function ProjectDetailsPage() {
       )}
 
       {/* README with proper Markdown rendering */}
-      {readme && (
+      {(readme || projectReadme) && (
         <div className='mb-12'>
-          <h2 className='text-xl font-bold mb-4'>README</h2>
+          <div className='flex justify-between items-center mb-4'>
+            <h2 className='text-xl font-bold'>Documentation</h2>
+
+            <div className='flex rounded-lg overflow-hidden border border-[#222222]'>
+              <button
+                onClick={() => setViewMode('technical')}
+                className={`px-3 py-1.5 text-sm transition-colors ${
+                  viewMode === 'technical'
+                    ? 'bg-[#8976EA] text-white'
+                    : 'bg-[#111111] text-gray-300 hover:bg-[#191919]'
+                }`}
+                disabled={!readme}
+              >
+                Technical
+              </button>
+              <button
+                onClick={() => setViewMode('project')}
+                className={`px-3 py-1.5 text-sm transition-colors ${
+                  viewMode === 'project'
+                    ? 'bg-[#8976EA] text-white'
+                    : 'bg-[#111111] text-gray-300 hover:bg-[#191919]'
+                }`}
+                disabled={!projectReadme}
+              >
+                Project
+              </button>
+            </div>
+          </div>
 
           <div className='bg-[#111111] border border-[#222222] rounded-lg p-6 prose prose-invert prose-a:text-[#8976EA] prose-headings:border-b prose-headings:border-[#222222] prose-headings:pb-2 max-w-none'>
             <ReactMarkdown
@@ -627,7 +689,7 @@ export default function ProjectDetailsPage() {
                 ),
               }}
             >
-              {readme}
+              {viewMode === 'technical' ? readme : projectReadme}
             </ReactMarkdown>
           </div>
         </div>

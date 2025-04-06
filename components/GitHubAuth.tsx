@@ -12,6 +12,7 @@ export default function GitHubAuth({ onTokenChange }: GitHubAuthProps) {
   const [rateLimit, setRateLimit] = useState<{
     remaining: number;
     limit: number;
+    tokenSource: 'client' | 'server' | null;
   } | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -24,7 +25,7 @@ export default function GitHubAuth({ onTokenChange }: GitHubAuthProps) {
       onTokenChange(storedToken);
       checkRateLimit(storedToken);
     } else {
-      // Check unauthenticated rate limit
+      // Check rate limit using server token if available
       checkRateLimit(null);
     }
   }, [onTokenChange]);
@@ -32,19 +33,17 @@ export default function GitHubAuth({ onTokenChange }: GitHubAuthProps) {
   // Check rate limit information
   const checkRateLimit = async (authToken: string | null) => {
     try {
-      const headers: HeadersInit = {};
-      if (authToken) {
-        headers.Authorization = `token ${authToken}`;
-      }
+      const url = authToken
+        ? `/api/github/rate-limit?token=${encodeURIComponent(authToken)}`
+        : '/api/github/rate-limit';
 
-      const response = await fetch('https://api.github.com/rate_limit', {
-        headers,
-      });
+      const response = await fetch(url);
       const data = await response.json();
 
       setRateLimit({
         remaining: data.rate.remaining,
         limit: data.rate.limit,
+        tokenSource: data.tokenSource,
       });
     } catch (error) {
       console.error('Error checking rate limit:', error);
@@ -87,7 +86,7 @@ export default function GitHubAuth({ onTokenChange }: GitHubAuthProps) {
     setToken('');
     setIsAuthenticated(false);
     onTokenChange(null);
-    checkRateLimit(null); // Check unauthenticated rate limit
+    checkRateLimit(null); // Check rate limit using server token if available
   };
 
   return (
@@ -103,6 +102,15 @@ export default function GitHubAuth({ onTokenChange }: GitHubAuthProps) {
                 {rateLimit.remaining < 10 && (
                   <span className='text-red-500 ml-1'>
                     (Low! Add a token to increase limit)
+                  </span>
+                )}
+                {rateLimit.tokenSource && (
+                  <span className='ml-1 text-xs'>
+                    (
+                    {rateLimit.tokenSource === 'client'
+                      ? 'Your token'
+                      : 'Server token'}
+                    )
                   </span>
                 )}
               </p>
