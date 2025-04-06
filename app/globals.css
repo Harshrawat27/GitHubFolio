@@ -66,7 +66,7 @@ body {
   }
 
   .card {
-    @apply bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg p-6 transition-all duration-300;
+    @apply bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg p-4 transition-all duration-300;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   }
 
