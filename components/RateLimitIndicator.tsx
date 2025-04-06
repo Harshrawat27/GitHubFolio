@@ -110,9 +110,9 @@ export default function RateLimitIndicator() {
 
   // Determine token source message
   let tokenMessage = 'No token found. Limited to 60 requests/hour';
-  if (rateLimit.hasEnvToken) {
-    tokenMessage = 'Using environment variable token (5,000 requests/hour)';
-  } else if (rateLimit.hasClientToken) {
+  if (rateLimit.tokenSource === 'environment') {
+    tokenMessage = 'Using server-side token (5,000 requests/hour)';
+  } else if (rateLimit.tokenSource === 'client') {
     tokenMessage = 'Using your personal token (5,000 requests/hour)';
   }
 
