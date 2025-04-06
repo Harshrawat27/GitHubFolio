@@ -22,7 +22,9 @@ export default function HomePage() {
       <div className='text-center mb-12'>
         <div className='flex items-center justify-center gap-3 mb-6'>
           <Image alt='logo' src='/githubfoliologo.png' width={40} height={40} />
-          <h1 className='text-3xl font-bold font-mono'>GitHubFolio</h1>
+          <h1 className='text-3xl font-bold font-mono'>
+            GitHub<span className='text-[#8976EA]'>Folio</span>
+          </h1>
         </div>
 
         <h2 className='text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-white to-[#8976EA] bg-clip-text text-transparent'>
@@ -47,7 +49,7 @@ export default function HomePage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder='username'
-              className='w-full bg-[#111111] border border-[#222222] text-white pl-[100px] pr-4 py-3.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8976EA] focus:border-transparent transition-all'
+              className='w-full bg-[#111111] border border-[#222222] text-white pl-[106px] pr-4 py-3.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8976EA] focus:border-transparent transition-all'
               required
             />
           </div>

@@ -17,6 +17,7 @@ export default function ProfilePage() {
 
   const [userData, setUserData] = useState<GitHubUser | null>(null);
   const [repos, setRepos] = useState<Repository[]>([]);
+  const [featuredRepos, setFeaturedRepos] = useState<Repository[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [token, setToken] = useState<string | null>(null);
@@ -66,6 +67,74 @@ export default function ProfilePage() {
 
         const reposData = await reposResponse.json();
         setRepos(reposData);
+
+        // Get pinned repositories if token is available
+        let pinnedRepos: Repository[] = [];
+
+        if (token) {
+          try {
+            const response = await fetch('https://api.github.com/graphql', {
+              method: 'POST',
+              headers: {
+                Authorization: `bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                query: `{
+                  user(login: "${username}") {
+                    pinnedItems(first: 6, types: REPOSITORY) {
+                      nodes {
+                        ... on Repository {
+                          name
+                        }
+                      }
+                    }
+                  }
+                }`,
+              }),
+            });
+
+            const result = await response.json();
+
+            if (result.data?.user?.pinnedItems?.nodes) {
+              const graphqlPinned = result.data.user.pinnedItems.nodes;
+
+              // Find the corresponding full repository data from our repos list
+              pinnedRepos = graphqlPinned
+                .map((pinnedItem: any) => {
+                  const fullRepo = reposData.find(
+                    (repo: Repository) => repo.name === pinnedItem.name
+                  );
+                  return fullRepo || null;
+                })
+                .filter(Boolean);
+            }
+          } catch (error) {
+            console.error('GraphQL error:', error);
+            // Fall back to heuristic method
+          }
+        }
+
+        // If we have fewer than 4 pinned repos, supplement with top repos
+        if (pinnedRepos.length < 4) {
+          // Get top repositories (non-forks with most stars)
+          const topRepos = [...reposData]
+            .filter(
+              (repo: Repository) =>
+                !repo.fork &&
+                !pinnedRepos.some((pinnedRepo) => pinnedRepo.id === repo.id)
+            )
+            .sort(
+              (a: Repository, b: Repository) =>
+                b.stargazers_count - a.stargazers_count
+            )
+            .slice(0, 4 - pinnedRepos.length);
+
+          setFeaturedRepos([...pinnedRepos, ...topRepos]);
+        } else {
+          // If we have 4 or more pinned repos, just use the first 4
+          setFeaturedRepos(pinnedRepos.slice(0, 4));
+        }
 
         // Extract skills from languages
         const languages = new Set<string>();
@@ -136,12 +205,6 @@ export default function ProfilePage() {
       </div>
     );
   }
-
-  // Get top repositories (non-forks with most stars)
-  const featuredRepos = [...repos]
-    .filter((repo) => !repo.fork)
-    .sort((a, b) => b.stargazers_count - a.stargazers_count)
-    .slice(0, 4);
 
   return (
     <div className='flex flex-col items-center pt-12 pb-32'>
