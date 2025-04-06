@@ -1,3 +1,4 @@
+// app/[username]/projects/[repo]/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -5,13 +6,13 @@ import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import BottomNavigation from '@/components/BottomNavigation';
+import SideNav from '@/components/SideNav';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import { createGitHubHeaders } from '@/lib/githubToken';
 
-// Updated interface that won't conflict
+// Interface for repository details
 interface RepoDetails {
   id: number;
   name: string;
@@ -43,7 +44,6 @@ interface RepoDetails {
     avatar_url: string;
     html_url: string;
   };
-  // Additional fields for the detailed repo response
   subscribers_count?: number;
   network_count?: number;
   readme?: string;
@@ -92,7 +92,6 @@ export default function ProjectDetailsPage() {
       setError('');
 
       try {
-        // Use createGitHubHeaders to get headers with the appropriate token
         const headers = createGitHubHeaders();
 
         // Fetch repo details
@@ -100,11 +99,9 @@ export default function ProjectDetailsPage() {
           `https://api.github.com/repos/${username}/${repoName}`,
           { headers }
         );
-
         if (!repoResponse.ok) {
           throw new Error(`Repository not found (${repoResponse.status})`);
         }
-
         const repoData = await repoResponse.json();
         setRepoData(repoData);
 
@@ -114,53 +111,40 @@ export default function ProjectDetailsPage() {
             `https://api.github.com/repos/${username}/${repoName}/readme`,
             { headers }
           );
-
           if (readmeResponse.ok) {
             const readmeData = await readmeResponse.json();
-            // README content is base64 encoded - use TextDecoder for proper UTF-8 decoding
             const content = readmeData.content;
             const byteCharacters = atob(content.replace(/\s/g, ''));
             const byteNumbers = new Array(byteCharacters.length);
-
             for (let i = 0; i < byteCharacters.length; i++) {
               byteNumbers[i] = byteCharacters.charCodeAt(i);
             }
-
             const byteArray = new Uint8Array(byteNumbers);
             const decodedContent = new TextDecoder('utf-8').decode(byteArray);
-
             setReadme(decodedContent);
           }
         } catch (error) {
           console.error('Error fetching README:', error);
-          // Continue without README
         }
 
-        // Try to fetch GitHubFolio.md for project view with multiple case variations and locations
-        const tryFetchProjectReadme = async (path: any) => {
+        // Try fetching GitHubFolio.md with multiple variations
+        const tryFetchProjectReadme = async (path: string) => {
           try {
             const projectReadmeResponse = await fetch(
               `https://api.github.com/repos/${username}/${repoName}/contents/${path}`,
               { headers }
             );
-
             if (projectReadmeResponse.ok) {
               const projectReadmeData = await projectReadmeResponse.json();
-              // Content is base64 encoded
               const content = projectReadmeData.content;
               const byteCharacters = atob(content.replace(/\s/g, ''));
               const byteNumbers = new Array(byteCharacters.length);
-
               for (let i = 0; i < byteCharacters.length; i++) {
                 byteNumbers[i] = byteCharacters.charCodeAt(i);
               }
-
               const byteArray = new Uint8Array(byteNumbers);
               const decodedContent = new TextDecoder('utf-8').decode(byteArray);
-
               setProjectReadme(decodedContent);
-
-              // If we have a project readme, default to project view
               setViewMode('project');
               return true;
             }
@@ -171,7 +155,6 @@ export default function ProjectDetailsPage() {
           }
         };
 
-        // Try different variations of the project file name and location
         const fileNameVariations = [
           'GitHubFolio.md',
           'GITHUBFOLIO.md',
@@ -197,14 +180,12 @@ export default function ProjectDetailsPage() {
             `https://api.github.com/repos/${username}/${repoName}/contributors?per_page=10`,
             { headers }
           );
-
           if (contributorsResponse.ok) {
             const contributorsData = await contributorsResponse.json();
             setContributors(contributorsData);
           }
         } catch (error) {
           console.error('Error fetching contributors:', error);
-          // Continue without contributors
         }
 
         // Fetch languages
@@ -213,14 +194,12 @@ export default function ProjectDetailsPage() {
             `https://api.github.com/repos/${username}/${repoName}/languages`,
             { headers }
           );
-
           if (languagesResponse.ok) {
             const languagesData = await languagesResponse.json();
             setLanguages(languagesData);
           }
         } catch (error) {
           console.error('Error fetching languages:', error);
-          // Continue without languages
         }
       } catch (error) {
         if (error instanceof Error) {
@@ -282,7 +261,6 @@ export default function ProjectDetailsPage() {
       Shell: '#89e051',
       Vue: '#41b883',
     };
-
     return colors[language] || '#8b949e';
   };
 
@@ -291,25 +269,26 @@ export default function ProjectDetailsPage() {
     if (src.startsWith('http')) {
       return src;
     }
-
-    // Handle relative image paths
     const repoBaseUrl = `https://raw.githubusercontent.com/${username}/${repoName}/${
       repoData?.default_branch || 'main'
     }`;
-
-    // Remove leading slash if present
     const cleanSrc = src.startsWith('/') ? src.substring(1) : src;
-
     return `${repoBaseUrl}/${cleanSrc}`;
   };
 
   if (loading) {
     return (
       <div className='flex flex-col items-center justify-center h-screen'>
-        <div className='w-16 h-16 relative'>
-          <div className='absolute inset-0 rounded-full border-2 border-[#8976EA] border-t-transparent animate-spin'></div>
+        <div className='relative w-16 h-16'>
+          <div className='absolute inset-0 rounded-full border-2 border-[var(--primary)] border-t-transparent animate-spin'></div>
+          <div className='absolute inset-0 m-auto w-2 h-2 bg-[var(--primary)] rounded-full'></div>
         </div>
-        <p className='mt-4 text-gray-400'>Loading project...</p>
+        <h2 className='text-xl font-bold mt-8 mb-2 font-mono'>
+          Loading project...
+        </h2>
+        <p className='text-[var(--text-secondary)] max-w-md text-center'>
+          We're fetching project details from GitHub.
+        </p>
       </div>
     );
   }
@@ -317,10 +296,10 @@ export default function ProjectDetailsPage() {
   if (error || !repoData) {
     return (
       <div className='flex flex-col items-center justify-center h-screen text-center px-4'>
-        <div className='w-16 h-16 bg-[#111111] rounded-full flex items-center justify-center mb-4'>
+        <div className='w-16 h-16 bg-[var(--card-bg)] flex items-center justify-center rounded-full border border-[var(--card-border)] mb-6'>
           <svg
             xmlns='http://www.w3.org/2000/svg'
-            className='h-8 w-8 text-[#8976EA]'
+            className='h-8 w-8 text-[var(--primary)]'
             fill='none'
             viewBox='0 0 24 24'
             stroke='currentColor'
@@ -334,12 +313,12 @@ export default function ProjectDetailsPage() {
           </svg>
         </div>
         <h2 className='text-2xl font-bold mb-2'>Project Not Found</h2>
-        <p className='text-gray-400 mb-6'>
+        <p className='text-[var(--text-secondary)] mb-6'>
           {error || "Couldn't load this project"}
         </p>
         <Link
           href={`/${username}`}
-          className='px-6 py-2 bg-[#8976EA] rounded-full text-white'
+          className='px-6 py-2 bg-[var(--primary)] rounded-full text-white'
         >
           Back to Profile
         </Link>
@@ -348,416 +327,451 @@ export default function ProjectDetailsPage() {
   }
 
   return (
-    <div className='flex flex-col pb-32'>
-      {/* Back button and repo link */}
-      <div className='flex justify-between items-center mb-8'>
-        <Link
-          href={`/${username}`}
-          className='text-gray-400 hover:text-white transition-colors flex items-center gap-2'
-        >
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            className='h-5 w-5'
-            viewBox='0 0 20 20'
-            fill='currentColor'
-          >
-            <path
-              fillRule='evenodd'
-              d='M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z'
-              clipRule='evenodd'
-            />
-          </svg>
-          Back to profile
-        </Link>
-
-        <a
-          href={repoData.html_url}
-          target='_blank'
-          rel='noopener noreferrer'
-          className='text-[#8976EA] hover:underline flex items-center gap-1'
-        >
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            className='h-4 w-4'
-            viewBox='0 0 20 20'
-            fill='currentColor'
-          >
-            <path
-              fillRule='evenodd'
-              d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z'
-              clipRule='evenodd'
-            />
-          </svg>
-          View on GitHub
-        </a>
-      </div>
-
-      {/* Project header */}
-      <div className='mb-8'>
-        <h1 className='text-3xl font-bold mb-2'>{repoData.name}</h1>
-        {repoData.description && (
-          <p className='text-gray-300 text-lg mb-4'>{repoData.description}</p>
-        )}
-
-        <div className='flex flex-wrap gap-4 mb-4'>
-          <div className='flex items-center gap-1.5'>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              className='h-5 w-5 text-yellow-400'
-              viewBox='0 0 20 20'
-              fill='currentColor'
-            >
-              <path d='M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z' />
-            </svg>
-            <span>{repoData.stargazers_count} stars</span>
-          </div>
-
-          <div className='flex items-center gap-1.5'>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              className='h-5 w-5 text-gray-400'
-              viewBox='0 0 20 20'
-              fill='currentColor'
-            >
-              <path
-                fillRule='evenodd'
-                d='M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z'
-                clipRule='evenodd'
-              />
-            </svg>
-            <span>{repoData.forks_count} forks</span>
-          </div>
-
-          <div className='flex items-center gap-1.5'>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              className='h-5 w-5 text-gray-400'
-              viewBox='0 0 20 20'
-              fill='currentColor'
-            >
-              <path d='M10 12a2 2 0 100-4 2 2 0 000 4z' />
-              <path
-                fillRule='evenodd'
-                d='M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z'
-                clipRule='evenodd'
-              />
-            </svg>
-            <span>{repoData.watchers_count} watchers</span>
-          </div>
-
-          <div className='flex items-center gap-1.5'>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              className='h-5 w-5 text-gray-400'
-              viewBox='0 0 20 20'
-              fill='currentColor'
-            >
-              <path
-                fillRule='evenodd'
-                d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z'
-                clipRule='evenodd'
-              />
-            </svg>
-            <span>Updated {formatDate(repoData.updated_at)}</span>
-          </div>
+    <>
+      <SideNav username={username} />
+      <div className='flex flex-col pb-32 pt-8 relative'>
+        {/* Date indicator */}
+        <div className='date-marker top-8 right-0'>
+          {new Date().toISOString().split('T')[0]}
         </div>
 
-        {/* Topics */}
-        {repoData.topics && repoData.topics.length > 0 && (
-          <div className='flex flex-wrap gap-2'>
-            {repoData.topics.map((topic) => (
+        {/* Back button and repo link */}
+        <div className='flex justify-between items-center mb-8'>
+          <Link
+            href={`/${username}/projects`}
+            className='text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2'
+          >
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              className='h-5 w-5'
+              viewBox='0 0 20 20'
+              fill='currentColor'
+            >
+              <path
+                fillRule='evenodd'
+                d='M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z'
+                clipRule='evenodd'
+              />
+            </svg>
+            Back to projects
+          </Link>
+          <a
+            href={repoData.html_url}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='text-[var(--primary)] hover:underline flex items-center gap-1 group'
+          >
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              className='h-4 w-4 group-hover:translate-x-1 transition-transform'
+              viewBox='0 0 20 20'
+              fill='currentColor'
+            >
+              <path
+                fillRule='evenodd'
+                d='M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z'
+                clipRule='evenodd'
+              />
+            </svg>
+            <span>View on GitHub</span>
+          </a>
+        </div>
+
+        {/* Project header */}
+        <div className='mb-12 relative'>
+          <div className='flex items-start gap-2 mb-2'>
+            {repoData.language && (
               <span
-                key={topic}
-                className='px-3 py-1 bg-[#111111] rounded-full text-sm'
-              >
-                {topic}
-              </span>
-            ))}
+                className='h-3 w-3 rounded-full inline-block mt-3'
+                style={{ backgroundColor: getLanguageColor(repoData.language) }}
+              ></span>
+            )}
+            <h1 className='text-4xl font-bold title-gradient'>
+              {repoData.name}
+            </h1>
           </div>
-        )}
-      </div>
-
-      {/* Languages */}
-      {Object.keys(languages).length > 0 && (
-        <div className='mb-12'>
-          <h2 className='text-xl font-bold mb-4'>Languages</h2>
-
-          <div className='h-4 bg-[#111111] rounded-full overflow-hidden mb-4'>
-            {calculateLanguagePercentages().map(
-              ({ language, percentage }, index) => (
-                <div
-                  key={language}
-                  style={{
-                    width: `${percentage}%`,
-                    backgroundColor: getLanguageColor(language),
-                    height: '100%',
-                    float: 'left',
-                  }}
-                  title={`${language}: ${percentage}%`}
-                ></div>
-              )
+          <div className='flex flex-wrap items-center gap-3 mb-3'>
+            <span className='date-indicator'>
+              {new Date(repoData.created_at)
+                .toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: '2-digit',
+                  year: 'numeric',
+                })
+                .toUpperCase()}
+            </span>
+            {repoData.language && (
+              <span className='bg-[var(--background)] px-2 py-0.5 rounded-full text-xs text-[var(--text-secondary)]'>
+                {repoData.language}
+              </span>
+            )}
+            {repoData.fork && (
+              <span className='bg-[var(--background)] px-2 py-0.5 rounded-full text-xs text-[var(--text-secondary)]'>
+                Forked
+              </span>
             )}
           </div>
-
-          <div className='flex flex-wrap gap-x-6 gap-y-2'>
-            {calculateLanguagePercentages().map(({ language, percentage }) => (
-              <div key={language} className='flex items-center gap-2'>
-                <span
-                  className='h-3 w-3 rounded-full'
-                  style={{ backgroundColor: getLanguageColor(language) }}
-                ></span>
-                <span>
-                  {language}{' '}
-                  <span className='text-gray-400 text-sm'>{percentage}%</span>
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Contributors */}
-      {contributors.length > 0 && (
-        <div className='mb-12'>
-          <h2 className='text-xl font-bold mb-4'>Contributors</h2>
-
-          <div className='flex flex-wrap gap-4'>
-            {contributors.map((contributor) => (
-              <a
-                key={contributor.login}
-                href={contributor.html_url}
-                target='_blank'
-                rel='noopener noreferrer'
-                className='flex flex-col items-center'
+          {repoData.description && (
+            <p className='text-[var(--text-secondary)] text-lg mb-6'>
+              {repoData.description}
+            </p>
+          )}
+          <div className='flex flex-wrap gap-5 mt-6 mb-4'>
+            <div className='flex items-center gap-2 bg-[var(--card-bg)] px-4 py-2 rounded-lg border border-[var(--card-border)]'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                className='h-5 w-5 text-yellow-400'
+                viewBox='0 0 20 20'
+                fill='currentColor'
               >
-                <div className='w-16 h-16 relative rounded-full overflow-hidden border border-[#222222] mb-2'>
-                  <Image
-                    src={contributor.avatar_url}
-                    alt={contributor.login}
-                    fill
-                    className='object-cover'
-                  />
-                </div>
-                <span className='text-sm font-mono'>{contributor.login}</span>
-                <span className='text-xs text-gray-400'>
-                  {contributor.contributions} commits
-                </span>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* README with proper Markdown rendering */}
-      {(readme || projectReadme) && (
-        <div className='mb-12'>
-          <div className='flex justify-between items-center mb-4'>
-            <h2 className='text-xl font-bold'>Documentation</h2>
-
-            <div className='flex rounded-lg overflow-hidden border border-[#222222]'>
-              <button
-                onClick={() => setViewMode('technical')}
-                className={`px-3 py-1.5 text-sm transition-colors ${
-                  viewMode === 'technical'
-                    ? 'bg-[#8976EA] text-white'
-                    : 'bg-[#111111] text-gray-300 hover:bg-[#191919]'
-                }`}
-                disabled={!readme}
+                <path d='M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z' />
+              </svg>
+              <span>{repoData.stargazers_count} stars</span>
+            </div>
+            <div className='flex items-center gap-2 bg-[var(--card-bg)] px-4 py-2 rounded-lg border border-[var(--card-border)]'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                className='h-5 w-5 text-[var(--text-secondary)]'
+                viewBox='0 0 20 20'
+                fill='currentColor'
               >
-                Technical
-              </button>
-              <button
-                onClick={() => setViewMode('project')}
-                className={`px-3 py-1.5 text-sm transition-colors ${
-                  viewMode === 'project'
-                    ? 'bg-[#8976EA] text-white'
-                    : 'bg-[#111111] text-gray-300 hover:bg-[#191919]'
-                }`}
-                disabled={!projectReadme}
+                <path
+                  fillRule='evenodd'
+                  d='M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z'
+                  clipRule='evenodd'
+                />
+              </svg>
+              <span>{repoData.forks_count} forks</span>
+            </div>
+            <div className='flex items-center gap-2 bg-[var(--card-bg)] px-4 py-2 rounded-lg border border-[var(--card-border)]'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                className='h-5 w-5 text-[var(--text-secondary)]'
+                viewBox='0 0 20 20'
+                fill='currentColor'
               >
-                Project
-              </button>
+                <path d='M10 12a2 2 0 100-4 2 2 0 000 4z' />
+                <path
+                  fillRule='evenodd'
+                  d='M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z'
+                  clipRule='evenodd'
+                />
+              </svg>
+              <span>{repoData.watchers_count} watchers</span>
+            </div>
+            <div className='flex items-center gap-2 bg-[var(--card-bg)] px-4 py-2 rounded-lg border border-[var(--card-border)]'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                className='h-5 w-5 text-[var(--text-secondary)]'
+                viewBox='0 0 20 20'
+                fill='currentColor'
+              >
+                <path
+                  fillRule='evenodd'
+                  d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z'
+                  clipRule='evenodd'
+                />
+              </svg>
+              <span>Updated {formatDate(repoData.updated_at)}</span>
             </div>
           </div>
-
-          {/* Debug message if no documentation is available for selected view */}
-          {((viewMode === 'technical' && !readme) ||
-            (viewMode === 'project' && !projectReadme)) && (
-            <div className='bg-[#111111] border border-[#222222] rounded-lg p-6 mb-4'>
-              <p className='text-gray-400 text-center'>
-                {viewMode === 'technical'
-                  ? 'No README.md found for this repository.'
-                  : 'No GitHubFolio.md or PROJECT.md found for this repository.'}
-              </p>
-              <p className='text-xs text-gray-500 text-center mt-2'>
-                {viewMode === 'project' &&
-                  'Create a GitHubFolio.md file in your repository to show a project-focused view.'}
-              </p>
+          {repoData.topics && repoData.topics.length > 0 && (
+            <div className='flex flex-wrap gap-2 my-4'>
+              {repoData.topics.map((topic) => (
+                <span
+                  key={topic}
+                  className='px-3 py-1 bg-[var(--background)] rounded-full text-sm text-[var(--text-secondary)]'
+                >
+                  {topic}
+                </span>
+              ))}
             </div>
           )}
-
-          <div className='bg-[#111111] border border-[#222222] rounded-lg p-6 prose prose-invert prose-a:text-[#8976EA] prose-headings:border-b prose-headings:border-[#222222] prose-headings:pb-2 max-w-none'>
-            {(viewMode === 'technical' && readme) ||
-            (viewMode === 'project' && projectReadme) ? (
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeHighlight]}
-                components={{
-                  img: ({ node, ...props }) => (
-                    <img
-                      {...props}
-                      src={transformImageUri(props.src || '')}
-                      className='max-w-full my-4 rounded-md'
-                      alt={props.alt || ''}
-                    />
-                  ),
-                  a: ({ node, ...props }) => (
-                    <a
-                      {...props}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                      className='hover:underline'
-                    />
-                  ),
-                  pre: ({ node, ...props }: any) => {
-                    // We need to extract the actual code as a string
-                    const [copied, setCopied] = useState(false);
-
-                    // Get reference to the pre element
-                    const preRef = React.useRef<HTMLPreElement>(null);
-
-                    const copyToClipboard = () => {
-                      if (preRef.current) {
-                        // Get the text content from the pre element
-                        const codeElement =
-                          preRef.current.querySelector('code');
-                        const textToCopy = codeElement?.textContent || '';
-
-                        // Copy to clipboard
-                        navigator.clipboard.writeText(textToCopy);
-
-                        // Show copied confirmation
-                        setCopied(true);
-                        setTimeout(() => setCopied(false), 2000);
-                      }
-                    };
-
-                    return (
-                      <div className='relative group'>
-                        <pre
-                          {...props}
-                          ref={preRef}
-                          className='bg-[#191919] p-4 rounded-md overflow-x-auto text-sm my-4'
-                        />
-                        <button
-                          onClick={copyToClipboard}
-                          className='absolute top-2 right-2 bg-[#333333] hover:bg-[#444444] p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity'
-                          title='Copy code'
-                          aria-label='Copy code to clipboard'
-                        >
-                          {copied ? (
-                            <>
-                              <svg
-                                xmlns='http://www.w3.org/2000/svg'
-                                width='16'
-                                height='16'
-                                viewBox='0 0 24 24'
-                                fill='none'
-                                stroke='currentColor'
-                                strokeWidth='2'
-                                strokeLinecap='round'
-                                strokeLinejoin='round'
-                              >
-                                <polyline points='20 6 9 17 4 12'></polyline>
-                              </svg>
-                              <span className='absolute top-10 right-0 bg-[#333333] text-white text-xs py-1 px-2 rounded'>
-                                Copied!
-                              </span>
-                            </>
-                          ) : (
-                            <svg
-                              xmlns='http://www.w3.org/2000/svg'
-                              width='16'
-                              height='16'
-                              viewBox='0 0 24 24'
-                              fill='none'
-                              stroke='currentColor'
-                              strokeWidth='2'
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                            >
-                              <rect
-                                x='9'
-                                y='9'
-                                width='13'
-                                height='13'
-                                rx='2'
-                                ry='2'
-                              ></rect>
-                              <path d='M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1'></path>
-                            </svg>
-                          )}
-                        </button>
-                      </div>
-                    );
-                  },
-                  code: ({ node, inline, ...props }: any) =>
-                    inline ? (
-                      <code
-                        {...props}
-                        className='bg-[#191919] px-1 py-0.5 rounded text-sm'
-                      />
-                    ) : (
-                      <code {...props} />
-                    ),
-                  table: ({ node, ...props }) => (
-                    <div className='overflow-x-auto my-4'>
-                      <table {...props} className='border-collapse w-full' />
-                    </div>
-                  ),
-                  th: ({ node, ...props }) => (
-                    <th
-                      {...props}
-                      className='border border-[#333333] px-4 py-2 text-left'
-                    />
-                  ),
-                  td: ({ node, ...props }) => (
-                    <td
-                      {...props}
-                      className='border border-[#333333] px-4 py-2'
-                    />
-                  ),
-                }}
-              >
-                {viewMode === 'technical' ? readme : projectReadme}
-              </ReactMarkdown>
-            ) : (
-              <div className='flex flex-col items-center justify-center py-8'>
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  className='h-16 w-16 text-gray-700 mb-4'
-                  fill='none'
-                  viewBox='0 0 24 24'
-                  stroke='currentColor'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={1.5}
-                    d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
-                  />
-                </svg>
-                <p className='text-gray-500'>
-                  No documentation content available
-                </p>
-              </div>
-            )}
+          <div className='absolute -right-4 top-0 text-xs font-mono text-[var(--text-secondary)] opacity-70'>
+            #05
           </div>
         </div>
-      )}
 
-      {/* Bottom Navigation */}
-      <BottomNavigation username={username} />
-    </div>
+        {/* Languages */}
+        {Object.keys(languages).length > 0 && (
+          <div className='mb-12'>
+            <h2 className='section-heading'>Languages</h2>
+            <div className='h-4 bg-[var(--card-bg)] rounded-full overflow-hidden mb-4'>
+              {calculateLanguagePercentages().map(
+                ({ language, percentage }, index) => (
+                  <div
+                    key={language}
+                    style={{
+                      width: `${percentage}%`,
+                      backgroundColor: getLanguageColor(language),
+                      height: '100%',
+                      float: 'left',
+                    }}
+                    title={`${language}: ${percentage}%`}
+                  ></div>
+                )
+              )}
+            </div>
+            <div className='flex flex-wrap gap-x-6 gap-y-2'>
+              {calculateLanguagePercentages().map(
+                ({ language, percentage }) => (
+                  <div key={language} className='flex items-center gap-2'>
+                    <span
+                      className='h-3 w-3 rounded-full'
+                      style={{ backgroundColor: getLanguageColor(language) }}
+                    ></span>
+                    <span className='text-[var(--text-primary)]'>
+                      {language}{' '}
+                      <span className='text-[var(--text-secondary)] text-sm'>
+                        {percentage}%
+                      </span>
+                    </span>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Contributors */}
+        {contributors.length > 0 && (
+          <div className='mb-12'>
+            <h2 className='section-heading'>Contributors</h2>
+            <div className='flex flex-wrap gap-4'>
+              {contributors.map((contributor) => (
+                <a
+                  key={contributor.login}
+                  href={contributor.html_url}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='flex flex-col items-center hover:scale-105 transition-transform'
+                >
+                  <div className='w-16 h-16 relative rounded-full overflow-hidden border border-[var(--card-border)] mb-2 bg-[var(--card-bg)]'>
+                    <Image
+                      src={contributor.avatar_url}
+                      alt={contributor.login}
+                      fill
+                      className='object-cover'
+                    />
+                  </div>
+                  <span className='text-sm font-mono text-[var(--primary)]'>
+                    {contributor.login}
+                  </span>
+                  <span className='text-xs text-[var(--text-secondary)]'>
+                    {contributor.contributions} commits
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Documentation */}
+        {(readme || projectReadme) && (
+          <div className='mb-12'>
+            <div className='flex justify-between items-center mb-4'>
+              <h2 className='section-heading'>Documentation</h2>
+              <div className='flex rounded-lg overflow-hidden border border-[var(--card-border)]'>
+                <button
+                  onClick={() => setViewMode('technical')}
+                  className={`px-3 py-1.5 text-sm transition-colors ${
+                    viewMode === 'technical'
+                      ? 'bg-[var(--primary)] text-white'
+                      : 'bg-[var(--card-bg)] text-[var(--text-secondary)] hover:bg-[var(--background)]'
+                  }`}
+                  disabled={!readme}
+                >
+                  Technical
+                </button>
+                <button
+                  onClick={() => setViewMode('project')}
+                  className={`px-3 py-1.5 text-sm transition-colors ${
+                    viewMode === 'project'
+                      ? 'bg-[var(--primary)] text-white'
+                      : 'bg-[var(--card-bg)] text-[var(--text-secondary)] hover:bg-[var(--background)]'
+                  }`}
+                  disabled={!projectReadme}
+                >
+                  Project
+                </button>
+              </div>
+            </div>
+            <div className='card bg-[var(--card-bg)]'>
+              <div className='flex items-center gap-2 px-4 py-2 border-b border-[var(--card-border)]'>
+                <div className='w-3 h-3 rounded-full bg-red-500'></div>
+                <div className='w-3 h-3 rounded-full bg-yellow-500'></div>
+                <div className='w-3 h-3 rounded-full bg-green-500'></div>
+                <div className='ml-2 text-xs font-mono text-[var(--text-secondary)]'>
+                  {viewMode === 'technical' ? 'README.md' : 'GitHubFolio.md'}
+                </div>
+              </div>
+              <div className='p-6'>
+                <div className='prose prose-invert dark:prose-invert max-w-none'>
+                  {(viewMode === 'technical' && readme) ||
+                  (viewMode === 'project' && projectReadme) ? (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeHighlight]}
+                      components={{
+                        img: ({ node, ...props }) => (
+                          <img
+                            {...props}
+                            src={transformImageUri(props.src || '')}
+                            className='max-w-full my-4 rounded-md'
+                            alt={props.alt || ''}
+                          />
+                        ),
+                        a: ({ node, ...props }) => (
+                          <a
+                            {...props}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='hover:underline'
+                          />
+                        ),
+                        pre: ({ node, ...props }: any) => {
+                          const [isCodeCopied, setIsCodeCopied] =
+                            useState(false);
+                          const preRef = React.useRef<HTMLPreElement>(null);
+
+                          const copyToClipboard = () => {
+                            if (preRef.current) {
+                              const codeElement =
+                                preRef.current.querySelector('code');
+                              const textToCopy = codeElement?.textContent || '';
+                              navigator.clipboard.writeText(textToCopy);
+                              setIsCodeCopied(true);
+                              setTimeout(() => setIsCodeCopied(false), 2000);
+                            }
+                          };
+
+                          return (
+                            <div className='relative group'>
+                              <pre
+                                {...props}
+                                ref={preRef}
+                                className='bg-[var(--background)] p-4 rounded-md overflow-x-auto text-sm my-4'
+                              />
+                              <button
+                                onClick={copyToClipboard}
+                                className='absolute top-2 right-2 bg-[var(--card-border)] hover:bg-[var(--primary)] p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity'
+                                title='Copy code'
+                                aria-label='Copy code to clipboard'
+                              >
+                                {isCodeCopied ? (
+                                  <>
+                                    <svg
+                                      xmlns='http://www.w3.org/2000/svg'
+                                      width='16'
+                                      height='16'
+                                      viewBox='0 0 24 24'
+                                      fill='none'
+                                      stroke='currentColor'
+                                      strokeWidth='2'
+                                      strokeLinecap='round'
+                                      strokeLinejoin='round'
+                                    >
+                                      <polyline points='20 6 9 17 4 12'></polyline>
+                                    </svg>
+                                    <span className='absolute -bottom-8 right-0 bg-[var(--card-bg)] text-white text-xs py-1 px-2 rounded'>
+                                      Copied!
+                                    </span>
+                                  </>
+                                ) : (
+                                  <svg
+                                    xmlns='http://www.w3.org/2000/svg'
+                                    width='16'
+                                    height='16'
+                                    viewBox='0 0 24 24'
+                                    fill='none'
+                                    stroke='currentColor'
+                                    strokeWidth='2'
+                                    strokeLinecap='round'
+                                    strokeLinejoin='round'
+                                  >
+                                    <rect
+                                      x='9'
+                                      y='9'
+                                      width='13'
+                                      height='13'
+                                      rx='2'
+                                      ry='2'
+                                    ></rect>
+                                    <path d='M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1'></path>
+                                  </svg>
+                                )}
+                              </button>
+                            </div>
+                          );
+                        },
+                        code: ({ node, inline, ...props }: any) =>
+                          inline ? (
+                            <code
+                              {...props}
+                              className='bg-[var(--background)] px-1 py-0.5 rounded text-sm'
+                            />
+                          ) : (
+                            <code {...props} />
+                          ),
+                        table: ({ node, ...props }) => (
+                          <div className='overflow-x-auto my-4'>
+                            <table
+                              {...props}
+                              className='border-collapse w-full'
+                            />
+                          </div>
+                        ),
+                        th: ({ node, ...props }) => (
+                          <th
+                            {...props}
+                            className='border border-[var(--card-border)] px-4 py-2 text-left bg-[var(--background)]'
+                          />
+                        ),
+                        td: ({ node, ...props }) => (
+                          <td
+                            {...props}
+                            className='border border-[var(--card-border)] px-4 py-2'
+                          />
+                        ),
+                      }}
+                    >
+                      {viewMode === 'technical' ? readme : projectReadme}
+                    </ReactMarkdown>
+                  ) : (
+                    <div className='flex flex-col items-center justify-center py-8 text-[var(--text-secondary)]'>
+                      <svg
+                        xmlns='http://www.w3.org/2000/svg'
+                        className='h-16 w-16 mb-4'
+                        fill='none'
+                        viewBox='0 0 24 24'
+                        stroke='currentColor'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth={1.5}
+                          d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+                        />
+                      </svg>
+                      <p>
+                        {viewMode === 'technical'
+                          ? 'No README.md found for this repository.'
+                          : 'No GitHubFolio.md found for this repository.'}
+                      </p>
+                      {viewMode === 'project' && (
+                        <p className='text-xs mt-2'>
+                          Create a GitHubFolio.md file in your repository to
+                          show a project-focused view.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTheme } from '@/lib/ThemeProvider';
 
 interface RateLimitData {
   remaining: number;
@@ -33,6 +34,7 @@ export default function RateLimitIndicator() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [expanded, setExpanded] = useState(false);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const fetchRateLimit = async () => {
@@ -81,10 +83,15 @@ export default function RateLimitIndicator() {
 
   if (loading) {
     return (
-      <div className='fixed bottom-24 left-4 bg-[#111111] border border-[#222222] rounded-lg p-3 text-sm shadow-lg'>
+      <div className='fixed bottom-8 left-8 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg p-3 text-sm shadow-lg backdrop-blur-md z-50'>
         <div className='flex items-center gap-2'>
-          <div className='animate-spin h-4 w-4 border-2 border-[#8976EA] rounded-full border-t-transparent'></div>
-          <span>Checking API quota...</span>
+          <div className='relative'>
+            <div className='animate-spin h-4 w-4 border-2 border-[var(--primary)] rounded-full border-t-transparent'></div>
+            <div className='absolute inset-0 m-auto w-1 h-1 bg-[var(--primary)] rounded-full'></div>
+          </div>
+          <span className='text-[var(--text-secondary)]'>
+            Checking API quota...
+          </span>
         </div>
       </div>
     );
@@ -92,8 +99,24 @@ export default function RateLimitIndicator() {
 
   if (error) {
     return (
-      <div className='fixed bottom-24 left-4 bg-[#111111] border border-[#222222] rounded-lg p-3 text-sm shadow-lg text-red-400'>
-        {error}
+      <div className='fixed bottom-8 left-8 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg p-3 text-sm shadow-lg backdrop-blur-md z-50 text-red-400'>
+        <div className='flex items-center gap-2'>
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            className='h-4 w-4'
+            fill='none'
+            viewBox='0 0 24 24'
+            stroke='currentColor'
+          >
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth={2}
+              d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+            />
+          </svg>
+          {error}
+        </div>
       </div>
     );
   }
@@ -117,7 +140,7 @@ export default function RateLimitIndicator() {
   }
 
   return (
-    <div className='fixed bottom-24 left-4 bg-[#111111] border border-[#222222] rounded-lg p-3 text-sm shadow-lg z-50 max-w-xs'>
+    <div className='fixed bottom-8 left-8 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg p-3 text-sm shadow-lg backdrop-blur-sm z-50 max-w-xs'>
       <div
         className='font-bold mb-2 flex items-center gap-2 cursor-pointer'
         onClick={() => setExpanded(!expanded)}
@@ -127,7 +150,7 @@ export default function RateLimitIndicator() {
             isLowQuota ? 'bg-red-500' : 'bg-green-500'
           }`}
         ></div>
-        <span>GitHub API Quota</span>
+        <span className='text-[var(--text-primary)]'>GitHub API Quota</span>
         <svg
           xmlns='http://www.w3.org/2000/svg'
           width='16'
@@ -138,7 +161,7 @@ export default function RateLimitIndicator() {
           strokeWidth='2'
           strokeLinecap='round'
           strokeLinejoin='round'
-          className={`ml-auto transition-transform ${
+          className={`ml-auto transition-transform text-[var(--text-secondary)] ${
             expanded ? 'rotate-180' : ''
           }`}
         >
@@ -148,33 +171,33 @@ export default function RateLimitIndicator() {
 
       {expanded && (
         <>
-          <div className='mb-3 p-2 bg-[#191919] rounded'>
+          <div className='mb-3 p-2 bg-[var(--background)] rounded'>
             <div className='grid grid-cols-2 gap-x-4 gap-y-1'>
-              <div>Remaining:</div>
-              <div className='font-mono font-bold'>
+              <div className='text-[var(--text-secondary)]'>Remaining:</div>
+              <div className='font-mono font-bold text-[var(--text-primary)]'>
                 {rateLimit.remaining} / {rateLimit.limit}
               </div>
 
-              <div>Used:</div>
-              <div className='font-mono'>
+              <div className='text-[var(--text-secondary)]'>Used:</div>
+              <div className='font-mono text-[var(--text-primary)]'>
                 {rateLimit.used} (
                 {Math.round((rateLimit.used / rateLimit.limit) * 100)}%)
               </div>
 
-              <div>Reset at:</div>
-              <div className='font-mono'>
+              <div className='text-[var(--text-secondary)]'>Reset at:</div>
+              <div className='font-mono text-[var(--text-primary)]'>
                 {formatResetTime(rateLimit.reset)}
               </div>
             </div>
 
-            <div className='mt-2'>
-              <div className='h-2 bg-[#222] rounded-full overflow-hidden'>
+            <div className='mt-3'>
+              <div className='h-2 bg-[var(--card-border)] rounded-full overflow-hidden'>
                 <div
                   className={`h-full ${
-                    isLowQuota ? 'bg-red-500' : 'bg-[#8976EA]'
+                    isLowQuota ? 'bg-red-500' : 'bg-[var(--primary)]'
                   }`}
                   style={{
-                    width: `${quotaPercentage}%`,
+                    width: `${(rateLimit.remaining / rateLimit.limit) * 100}%`,
                   }}
                 ></div>
               </div>
@@ -183,25 +206,29 @@ export default function RateLimitIndicator() {
 
           {/* Resource specific limits */}
           {rateLimit.resources && (
-            <div className='mb-3 p-2 bg-[#191919] rounded'>
-              <div className='font-medium mb-1'>Resource Limits</div>
+            <div className='mb-3 p-2 bg-[var(--background)] rounded'>
+              <div className='font-medium mb-1 text-[var(--text-primary)]'>
+                Resource Limits
+              </div>
               <div className='grid grid-cols-2 gap-x-4 gap-y-1'>
-                <div>Search API:</div>
-                <div className='font-mono'>
+                <div className='text-[var(--text-secondary)]'>Search API:</div>
+                <div className='font-mono text-[var(--text-primary)]'>
                   {rateLimit.resources.search.remaining} /{' '}
                   {rateLimit.resources.search.limit}
                 </div>
 
-                <div>GraphQL API:</div>
-                <div className='font-mono'>
-                  {rateLimit.resources.graphql.remaining} /{' '}
-                  {rateLimit.resources.graphql.limit}
+                <div className='text-[var(--text-secondary)]'>GraphQL API:</div>
+                <div className='font-mono text-[var(--text-primary)]'>
+                  {rateLimit.resources.graphql?.remaining || 0} /{' '}
+                  {rateLimit.resources.graphql?.limit || 0}
                 </div>
               </div>
             </div>
           )}
 
-          <div className='mt-2 text-xs text-gray-400'>{tokenMessage}</div>
+          <div className='mt-2 text-xs text-[var(--text-secondary)]'>
+            {tokenMessage}
+          </div>
         </>
       )}
     </div>

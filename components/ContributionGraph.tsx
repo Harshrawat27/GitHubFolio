@@ -1,6 +1,8 @@
+// components/ContributionGraph.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createGitHubHeaders } from '@/lib/githubToken';
 
 interface ContributionGraphProps {
   username: string;
@@ -34,10 +36,7 @@ export default function ContributionGraph({
 
       try {
         // Create headers with token if available
-        const headers: HeadersInit = {};
-        if (token) {
-          headers.Authorization = `token ${token}`;
-        }
+        const headers = createGitHubHeaders();
 
         // Fetch contribution data - unfortunately, standard REST API doesn't provide this data
         // We'd need the GraphQL API for actual contribution data
@@ -143,7 +142,7 @@ export default function ContributionGraph({
 
   // Helper to get color based on contribution count
   const getContributionColor = (count: number) => {
-    if (count === 0) return 'bg-[#111111]';
+    if (count === 0) return 'bg-[var(--card-bg)]';
     if (count === 1) return 'bg-[#553F9A]';
     if (count <= 3) return 'bg-[#6F5BD0]';
     if (count <= 5) return 'bg-[#8976EA]';
@@ -179,8 +178,8 @@ export default function ContributionGraph({
     }
 
     return (
-      <div className='flex overflow-x-auto pb-4'>
-        <div className='mr-2 text-xs text-gray-400 flex flex-col justify-around h-[110px] pt-[10px]'>
+      <div className='flex overflow-x-auto pb-4 scrollbar-thin'>
+        <div className='mr-2 text-xs text-[var(--text-secondary)] flex flex-col justify-around h-[110px] pt-[10px]'>
           {['Mon', '', 'Wed', '', 'Fri', ''].map((day, index) => (
             <div key={index} className='h-3 flex items-center'>
               {day}
@@ -188,7 +187,7 @@ export default function ContributionGraph({
           ))}
         </div>
         <div>
-          <div className='flex text-xs text-gray-400 mb-1 px-1'>
+          <div className='flex text-xs text-[var(--text-secondary)] mb-1 px-1'>
             {contributions.months.map((month, index) => (
               <div key={index} className='w-[14px] mx-[2px]'>
                 {/* Approximate month position */}
@@ -204,7 +203,7 @@ export default function ContributionGraph({
                     key={day.date || `empty-${day.day}-${weekIndex}`}
                     className={`w-3 h-3 m-[1px] rounded-sm ${getContributionColor(
                       day.count
-                    )}`}
+                    )} hover:ring-1 hover:ring-[var(--text-primary)] transition-all duration-150`}
                     title={
                       day.date ? `${day.date}: ${day.count} contributions` : ''
                     }
@@ -219,20 +218,23 @@ export default function ContributionGraph({
   };
 
   return (
-    <div className='card'>
+    <div className='relative'>
       <div className='flex justify-between items-center mb-6'>
-        <h2 className='text-xl font-bold flex items-center gap-2'>
-          <span className='w-1 h-6 bg-[#8976EA] rounded-md'></span>
-          Contribution Activity
-        </h2>
+        <div className='text-lg font-medium'>
+          {contributions ? (
+            <span>
+              {contributions.totalContributions} contributions in the last year
+            </span>
+          ) : null}
+        </div>
 
-        <div className='flex border border-[#222222] rounded overflow-hidden'>
+        <div className='flex border border-[var(--card-border)] rounded overflow-hidden'>
           <button
             onClick={() => setYear(new Date().getFullYear())}
             className={`px-3 py-1 text-sm ${
               year === new Date().getFullYear()
-                ? 'bg-[#8976EA] text-white'
-                : 'bg-[#111111] text-gray-300 hover:bg-[#191919]'
+                ? 'bg-[var(--primary)] text-white'
+                : 'bg-[var(--card-bg)] text-[var(--text-secondary)] hover:bg-[var(--background)]'
             }`}
           >
             {new Date().getFullYear()}
@@ -241,8 +243,8 @@ export default function ContributionGraph({
             onClick={() => setYear(new Date().getFullYear() - 1)}
             className={`px-3 py-1 text-sm ${
               year === new Date().getFullYear() - 1
-                ? 'bg-[#8976EA] text-white'
-                : 'bg-[#111111] text-gray-300 hover:bg-[#191919]'
+                ? 'bg-[var(--primary)] text-white'
+                : 'bg-[var(--card-bg)] text-[var(--text-secondary)] hover:bg-[var(--background)]'
             }`}
           >
             {new Date().getFullYear() - 1}
@@ -252,23 +254,22 @@ export default function ContributionGraph({
 
       {loading ? (
         <div className='py-8 flex items-center justify-center'>
-          <div className='animate-spin h-8 w-8 border-2 border-[#8976EA] rounded-full border-t-transparent'></div>
+          <div className='relative'>
+            <div className='animate-spin h-8 w-8 border-2 border-[var(--primary)] rounded-full border-t-transparent'></div>
+            <div className='absolute inset-0 m-auto w-1.5 h-1.5 bg-[var(--primary)] rounded-full'></div>
+          </div>
         </div>
       ) : error ? (
         <div className='text-red-400 py-4'>{error}</div>
       ) : contributions ? (
         <div>
-          <div className='text-lg font-medium mb-4'>
-            {contributions.totalContributions} contributions in the last year
-          </div>
-
-          <div className='bg-[#111111] border border-[#222222] rounded-lg p-4'>
+          <div className='border border-[var(--card-border)] rounded-lg p-4'>
             {generateCalendarGrid()}
 
-            <div className='flex items-center justify-end mt-2 text-xs text-gray-400'>
+            <div className='flex items-center justify-end mt-2 text-xs text-[var(--text-secondary)]'>
               <span className='mr-2'>Less</span>
               <div className='flex items-center gap-[3px]'>
-                <div className='w-3 h-3 bg-[#111111] rounded-sm'></div>
+                <div className='w-3 h-3 bg-[var(--card-bg)] rounded-sm'></div>
                 <div className='w-3 h-3 bg-[#553F9A] rounded-sm'></div>
                 <div className='w-3 h-3 bg-[#6F5BD0] rounded-sm'></div>
                 <div className='w-3 h-3 bg-[#8976EA] rounded-sm'></div>
@@ -279,6 +280,11 @@ export default function ContributionGraph({
           </div>
         </div>
       ) : null}
+
+      {/* Decorative elements */}
+      <div className='absolute -right-4 top-0 text-xs font-mono text-[var(--text-secondary)] opacity-70'>
+        #02
+      </div>
     </div>
   );
 }

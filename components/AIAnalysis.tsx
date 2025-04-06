@@ -1,3 +1,4 @@
+// components/AIAnalysis.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -217,16 +218,16 @@ export default function AIAnalysis({ user, repos }: AIAnalysisProps) {
 
   return (
     <div className='card'>
-      <h2 className='text-xl font-bold mb-6 flex items-center gap-2'>
-        <span className='w-1 h-6 bg-[#8976EA] rounded-md'></span>
-        Developer Insights
-      </h2>
-
       {loading ? (
         <div className='py-8 flex items-center justify-center'>
           <div className='flex flex-col items-center'>
-            <div className='animate-spin h-8 w-8 border-2 border-[#8976EA] rounded-full border-t-transparent mb-4'></div>
-            <p className='text-gray-500'>Analyzing developer profile...</p>
+            <div className='relative'>
+              <div className='animate-spin h-8 w-8 border-2 border-[var(--primary)] rounded-full border-t-transparent'></div>
+              <div className='absolute inset-0 m-auto w-1.5 h-1.5 bg-[var(--primary)] rounded-full'></div>
+            </div>
+            <p className='text-[var(--text-secondary)] mt-4'>
+              Analyzing developer profile...
+            </p>
           </div>
         </div>
       ) : error ? (
@@ -239,19 +240,20 @@ export default function AIAnalysis({ user, repos }: AIAnalysisProps) {
               return (
                 <div
                   key={index}
-                  className='bg-[#191919] border border-[#222222] rounded-md p-4 hover:border-[#8976EA] hover:border-opacity-30 transition-all duration-300'
+                  className='bg-[var(--background)] border border-[var(--card-border)] rounded-md p-4 hover:border-[var(--primary)] hover:border-opacity-30 transition-all duration-300 relative group'
                 >
-                  <h3 className='text-lg font-medium text-[#8976EA] mb-2'>
+                  <h3 className='text-lg font-medium text-[var(--primary)] mb-2'>
                     {title.replace(/\*\*/g, '')}
                   </h3>
-                  <p className='text-gray-300 text-sm leading-relaxed'>
+                  <p className='text-[var(--text-secondary)] text-sm leading-relaxed'>
                     {content}
                   </p>
+                  <div className='absolute right-4 top-4 w-1.5 h-1.5 rounded-full bg-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity'></div>
                 </div>
               );
             }
             return (
-              <p key={index} className='text-gray-300'>
+              <p key={index} className='text-[var(--text-secondary)]'>
                 {paragraph}
               </p>
             );
@@ -259,7 +261,7 @@ export default function AIAnalysis({ user, repos }: AIAnalysisProps) {
         </div>
       )}
 
-      <div className='mt-6 pt-4 border-t border-[#222222] text-xs text-gray-600'>
+      <div className='mt-6 pt-4 border-t border-[var(--card-border)] text-xs text-[var(--text-secondary)] opacity-70'>
         <p>
           This analysis is generated using AI based on public GitHub data and
           provides general insights about the developer profile.

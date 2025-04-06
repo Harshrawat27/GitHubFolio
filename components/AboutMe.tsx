@@ -1,3 +1,4 @@
+// components/AboutMe.tsx
 import { GitHubUser } from '@/types';
 
 interface AboutMeProps {
@@ -23,39 +24,134 @@ export default function AboutMe({ user }: AboutMeProps) {
     I have ${user.public_repos} repositories and ${user.followers} followers.
   `;
 
-  return (
-    <section className='w-full mb-16'>
-      <h2 className='text-2xl font-bold mb-6'>About Me</h2>
+  // Format the join date
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
 
-      <div className='prose prose-invert max-w-none'>
-        <p className='text-gray-300 leading-relaxed'>
+  return (
+    <div className='space-y-4 text-[var(--text-primary)]'>
+      <div className='flex items-center gap-2 mb-2'>
+        <span className='font-mono text-[var(--primary)]'>$</span>
+        <span className='text-[var(--text-secondary)]'>whoami</span>
+      </div>
+
+      <div className='pl-4'>
+        <p className='leading-relaxed whitespace-pre-line'>
           {user.bio || defaultBio}
         </p>
       </div>
 
-      <div className='grid grid-cols-2 sm:grid-cols-4 gap-6 mt-8'>
-        <div className='text-center'>
-          <p className='text-2xl font-bold text-[#8976EA]'>
-            {user.public_repos}
-          </p>
-          <p className='text-sm text-gray-400'>Repositories</p>
-        </div>
+      <div className='flex items-center gap-2 mb-2'>
+        <span className='font-mono text-[var(--primary)]'>$</span>
+        <span className='text-[var(--text-secondary)]'>
+          git log --author="{user.login}" --since="first commit"
+        </span>
+      </div>
 
-        <div className='text-center'>
-          <p className='text-2xl font-bold text-[#8976EA]'>{user.followers}</p>
-          <p className='text-sm text-gray-400'>Followers</p>
-        </div>
+      <div className='pl-4 space-y-2'>
+        <div className='flex flex-wrap gap-x-6 gap-y-2'>
+          <div className='flex items-center gap-2'>
+            <span className='text-[var(--primary)] font-mono'>
+              first-commit
+            </span>
+            <span>{formatDate(joinDate)}</span>
+          </div>
 
-        <div className='text-center'>
-          <p className='text-2xl font-bold text-[#8976EA]'>{user.following}</p>
-          <p className='text-sm text-gray-400'>Following</p>
-        </div>
+          <div className='flex items-center gap-2'>
+            <span className='text-[var(--primary)] font-mono'>total-repos</span>
+            <span>{user.public_repos}</span>
+          </div>
 
-        <div className='text-center'>
-          <p className='text-2xl font-bold text-[#8976EA]'>{yearsOnGitHub}</p>
-          <p className='text-sm text-gray-400'>Years</p>
+          <div className='flex items-center gap-2'>
+            <span className='text-[var(--primary)] font-mono'>followers</span>
+            <span>{user.followers}</span>
+          </div>
+
+          <div className='flex items-center gap-2'>
+            <span className='text-[var(--primary)] font-mono'>following</span>
+            <span>{user.following}</span>
+          </div>
+
+          <div className='flex items-center gap-2'>
+            <span className='text-[var(--primary)] font-mono'>experience</span>
+            <span>
+              {yearsOnGitHub} {yearsOnGitHub === 1 ? 'year' : 'years'}
+            </span>
+          </div>
         </div>
       </div>
-    </section>
+
+      <div className='flex items-center gap-2 mb-2'>
+        <span className='font-mono text-[var(--primary)]'>$</span>
+        <span className='text-[var(--text-secondary)]'>cat contact.md</span>
+      </div>
+
+      <div className='pl-4 space-y-2'>
+        {user.email && (
+          <div className='flex items-center gap-2'>
+            <span className='text-[var(--primary)] font-mono'>email</span>
+            <a href={`mailto:${user.email}`} className='hover:underline'>
+              {user.email}
+            </a>
+          </div>
+        )}
+
+        {user.blog && (
+          <div className='flex items-center gap-2'>
+            <span className='text-[var(--primary)] font-mono'>website</span>
+            <a
+              href={
+                user.blog.startsWith('http')
+                  ? user.blog
+                  : `https://${user.blog}`
+              }
+              target='_blank'
+              rel='noopener noreferrer'
+              className='hover:underline'
+            >
+              {user.blog}
+            </a>
+          </div>
+        )}
+
+        {user.twitter_username && (
+          <div className='flex items-center gap-2'>
+            <span className='text-[var(--primary)] font-mono'>twitter</span>
+            <a
+              href={`https://twitter.com/${user.twitter_username}`}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='hover:underline'
+            >
+              @{user.twitter_username}
+            </a>
+          </div>
+        )}
+
+        {user.location && (
+          <div className='flex items-center gap-2'>
+            <span className='text-[var(--primary)] font-mono'>location</span>
+            <span>{user.location}</span>
+          </div>
+        )}
+
+        {user.company && (
+          <div className='flex items-center gap-2'>
+            <span className='text-[var(--primary)] font-mono'>company</span>
+            <span>{user.company}</span>
+          </div>
+        )}
+      </div>
+
+      <div className='flex items-center gap-2 mb-2'>
+        <span className='font-mono text-[var(--primary)]'>$</span>
+        <span className='text-[var(--text-secondary)] animate-pulse'>█</span>
+      </div>
+    </div>
   );
 }
