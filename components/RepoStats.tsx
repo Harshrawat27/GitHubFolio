@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Repository, LanguageStat } from '@/types';
 import { StarIcon, GitForkIcon } from '@/components/Icons';
+import { createGitHubHeaders } from '@/lib/githubToken';
 
 interface RepoStatsProps {
   repos: Repository[];
@@ -20,7 +21,6 @@ export default function RepoStats({ repos }: RepoStatsProps) {
   const totalForks = useMemo(() => {
     return repos.reduce((sum, repo) => sum + repo.forks_count, 0);
   }, [repos]);
-
   // Calculate language statistics
   const languageStats = useMemo(() => {
     const stats: Record<string, number> = {};
@@ -56,6 +56,8 @@ export default function RepoStats({ repos }: RepoStatsProps) {
       })
       .slice(0, 5);
   }, [repos, sortBy]);
+
+  // Rest of the component...
 
   return (
     <div className='card'>

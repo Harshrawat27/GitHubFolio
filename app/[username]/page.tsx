@@ -8,6 +8,7 @@ import { GitHubUser, Repository } from '@/types';
 import FeaturedProjects from '@/components/FeaturedProjects';
 import AboutMe from '@/components/AboutMe';
 import BottomNavigation from '@/components/BottomNavigation';
+import { createGitHubHeaders } from '@/lib/githubToken';
 // import ContributionGraph from '@/components/ContributionGraph'; // Import the ContributionGraph component
 
 export default function ProfilePage() {
@@ -40,11 +41,8 @@ export default function ProfilePage() {
       setError('');
 
       try {
-        // Create headers with token if available
-        const headers: HeadersInit = {};
-        if (token) {
-          headers.Authorization = `token ${token}`;
-        }
+        // Use createGitHubHeaders to get headers with the appropriate token
+        const headers = createGitHubHeaders();
 
         // Fetch user profile data
         const userResponse = await fetch(
@@ -71,12 +69,14 @@ export default function ProfilePage() {
         // Get pinned repositories if token is available
         let pinnedRepos: Repository[] = [];
 
-        if (token) {
+        // Try to use GraphQL API for pinned repos if we have a token
+        const activeToken = process.env.GITHUB_ACCESS_TOKEN || token;
+        if (activeToken) {
           try {
             const response = await fetch('https://api.github.com/graphql', {
               method: 'POST',
               headers: {
-                Authorization: `bearer ${token}`,
+                Authorization: `bearer ${activeToken}`,
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
@@ -161,6 +161,8 @@ export default function ProfilePage() {
 
     fetchGitHubProfile();
   }, [username, token]);
+
+  // Rest of the component...
 
   if (loading) {
     return (

@@ -9,7 +9,7 @@ import BottomNavigation from '@/components/BottomNavigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
-// import { Repository } from '@/types';
+import { createGitHubHeaders } from '@/lib/githubToken';
 
 // Updated interface that won't conflict
 interface RepoDetails {
@@ -92,11 +92,8 @@ export default function ProjectDetailsPage() {
       setError('');
 
       try {
-        // Create headers with token if available
-        const headers: HeadersInit = {};
-        if (token) {
-          headers.Authorization = `token ${token}`;
-        }
+        // Use createGitHubHeaders to get headers with the appropriate token
+        const headers = createGitHubHeaders();
 
         // Fetch repo details
         const repoResponse = await fetch(
@@ -215,6 +212,8 @@ export default function ProjectDetailsPage() {
 
     fetchRepoData();
   }, [username, repoName, token]);
+
+  // Rest of the component...
 
   // Format date
   const formatDate = (dateString: string) => {

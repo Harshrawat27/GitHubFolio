@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { CommitActivity } from '@/types';
+import { createGitHubHeaders } from '@/lib/githubToken';
 
 interface ActivityGraphProps {
   username: string;
@@ -28,11 +29,8 @@ export default function ActivityGraph({ username, token }: ActivityGraphProps) {
       setError('');
 
       try {
-        // Create headers with token if available
-        const headers: HeadersInit = {};
-        if (token) {
-          headers.Authorization = `token ${token}`;
-        }
+        // Use createGitHubHeaders to get headers with the appropriate token
+        const headers = createGitHubHeaders();
 
         // First, fetch all user repositories
         const reposResponse = await fetch(
@@ -161,6 +159,8 @@ export default function ActivityGraph({ username, token }: ActivityGraphProps) {
       fetchActivityData();
     }
   }, [username, token]);
+
+  // Rest of the component...
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {

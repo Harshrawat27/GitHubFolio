@@ -1,3 +1,4 @@
+// components/RateLimitIndicator.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,24 +8,24 @@ interface RateLimitData {
   limit: number;
   reset: number;
   used: number;
+  hasEnvToken: boolean;
   hasClientToken: boolean;
-  hasServerToken: boolean;
-  effectiveTokenSource: 'client' | 'server' | null;
-  client?: {
-    remaining: number;
-    limit: number;
-    reset: number;
-    used: number;
+  tokenSource: 'environment' | 'client' | null;
+  resources?: {
+    core: {
+      limit: number;
+      remaining: number;
+      reset: number;
+      used: number;
+    };
+    search: {
+      limit: number;
+      remaining: number;
+      reset: number;
+      used: number;
+    };
+    [key: string]: any;
   };
-  server?: {
-    remaining: number;
-    limit: number;
-    reset: number;
-    used: number;
-  };
-  totalLimit: number;
-  totalRemaining: number;
-  _debug?: any;
 }
 
 export default function RateLimitIndicator() {
@@ -54,7 +55,6 @@ export default function RateLimitIndicator() {
         }
 
         const data = await response.json();
-        console.log('Rate limit data:', data); // Debug log
         setRateLimit(data);
         setError('');
       } catch (err) {
@@ -67,8 +67,8 @@ export default function RateLimitIndicator() {
 
     fetchRateLimit();
 
-    // Refresh rate limit data every minute
-    const intervalId = setInterval(fetchRateLimit, 60000);
+    // Refresh rate limit data every 2 minutes
+    const intervalId = setInterval(fetchRateLimit, 120000);
 
     return () => clearInterval(intervalId);
   }, []);
@@ -102,15 +102,19 @@ export default function RateLimitIndicator() {
     return null;
   }
 
-  // Calculate percentage of rate limit used
-  const usedPercentage = Math.max(
-    0,
-    Math.min(100, Math.round((rateLimit.used / rateLimit.limit) * 100))
+  // Calculate quota status
+  const isLowQuota = rateLimit.remaining < 20;
+  const quotaPercentage = Math.round(
+    (rateLimit.remaining / rateLimit.limit) * 100
   );
-  const remainingPercentage = Math.max(
-    0,
-    Math.min(100, Math.round((rateLimit.remaining / rateLimit.limit) * 100))
-  );
+
+  // Determine token source message
+  let tokenMessage = 'No token found. Limited to 60 requests/hour';
+  if (rateLimit.hasEnvToken) {
+    tokenMessage = 'Using environment variable token (5,000 requests/hour)';
+  } else if (rateLimit.hasClientToken) {
+    tokenMessage = 'Using your personal token (5,000 requests/hour)';
+  }
 
   return (
     <div className='fixed bottom-24 left-4 bg-[#111111] border border-[#222222] rounded-lg p-3 text-sm shadow-lg z-50 max-w-xs'>
@@ -120,16 +124,10 @@ export default function RateLimitIndicator() {
       >
         <div
           className={`w-2 h-2 rounded-full ${
-            (rateLimit.hasClientToken && rateLimit.client?.remaining === 0) ||
-            (rateLimit.hasServerToken && rateLimit.server?.remaining === 0) ||
-            (!rateLimit.hasClientToken &&
-              !rateLimit.hasServerToken &&
-              rateLimit.remaining < 10)
-              ? 'bg-red-500'
-              : 'bg-green-500'
+            isLowQuota ? 'bg-red-500' : 'bg-green-500'
           }`}
         ></div>
-        <span>GitHub API Rate Limit</span>
+        <span>GitHub API Quota</span>
         <svg
           xmlns='http://www.w3.org/2000/svg'
           width='16'
@@ -150,124 +148,7 @@ export default function RateLimitIndicator() {
 
       {expanded && (
         <>
-          {/* Combined total */}
           <div className='mb-3 p-2 bg-[#191919] rounded'>
-            <div className='font-medium mb-1'>Combined Total</div>
-            <div className='grid grid-cols-2 gap-x-4 gap-y-1'>
-              <div>Remaining:</div>
-              <div className='font-mono font-bold'>
-                {rateLimit.totalRemaining} / {rateLimit.totalLimit}
-              </div>
-            </div>
-
-            <div className='mt-2'>
-              <div className='h-2 bg-[#222] rounded-full overflow-hidden'>
-                <div
-                  className='h-full bg-[#8976EA]'
-                  style={{
-                    width: `${Math.round(
-                      (rateLimit.totalRemaining /
-                        Math.max(1, rateLimit.totalLimit)) *
-                        100
-                    )}%`,
-                  }}
-                ></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Client token stats */}
-          {rateLimit.hasClientToken && rateLimit.client && (
-            <div className='mb-3 p-2 bg-[#191919] rounded'>
-              <div className='font-medium mb-1'>Your Personal Token</div>
-              <div className='grid grid-cols-2 gap-x-4 gap-y-1'>
-                <div>Remaining:</div>
-                <div className='font-mono font-bold'>
-                  {rateLimit.client.remaining} / {rateLimit.client.limit}
-                </div>
-
-                <div>Used:</div>
-                <div className='font-mono'>
-                  {rateLimit.client.used} (
-                  {Math.round(
-                    (rateLimit.client.used / rateLimit.client.limit) * 100
-                  )}
-                  %)
-                </div>
-
-                <div>Reset at:</div>
-                <div className='font-mono'>
-                  {formatResetTime(rateLimit.client.reset)}
-                </div>
-              </div>
-
-              <div className='mt-2'>
-                <div className='h-2 bg-[#222] rounded-full overflow-hidden'>
-                  <div
-                    className={`h-full ${
-                      rateLimit.client.remaining < 100
-                        ? 'bg-yellow-500'
-                        : 'bg-[#8976EA]'
-                    }`}
-                    style={{
-                      width: `${Math.round(
-                        (rateLimit.client.remaining / rateLimit.client.limit) *
-                          100
-                      )}%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Server token stats */}
-          {rateLimit.hasServerToken && rateLimit.server && (
-            <div className='mb-3 p-2 bg-[#191919] rounded'>
-              <div className='font-medium mb-1'>Server Token</div>
-              <div className='grid grid-cols-2 gap-x-4 gap-y-1'>
-                <div>Remaining:</div>
-                <div className='font-mono font-bold'>
-                  {rateLimit.server.remaining} / {rateLimit.server.limit}
-                </div>
-
-                <div>Used:</div>
-                <div className='font-mono'>
-                  {rateLimit.server.used} (
-                  {Math.round(
-                    (rateLimit.server.used / rateLimit.server.limit) * 100
-                  )}
-                  %)
-                </div>
-
-                <div>Reset at:</div>
-                <div className='font-mono'>
-                  {formatResetTime(rateLimit.server.reset)}
-                </div>
-              </div>
-
-              <div className='mt-2'>
-                <div className='h-2 bg-[#222] rounded-full overflow-hidden'>
-                  <div
-                    className={`h-full ${
-                      rateLimit.server.remaining < 100
-                        ? 'bg-yellow-500'
-                        : 'bg-[#8976EA]'
-                    }`}
-                    style={{
-                      width: `${Math.round(
-                        (rateLimit.server.remaining / rateLimit.server.limit) *
-                          100
-                      )}%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Unauthenticated stats */}
-          {!rateLimit.hasClientToken && !rateLimit.hasServerToken && (
             <div className='grid grid-cols-2 gap-x-4 gap-y-1'>
               <div>Remaining:</div>
               <div className='font-mono font-bold'>
@@ -285,17 +166,42 @@ export default function RateLimitIndicator() {
                 {formatResetTime(rateLimit.reset)}
               </div>
             </div>
+
+            <div className='mt-2'>
+              <div className='h-2 bg-[#222] rounded-full overflow-hidden'>
+                <div
+                  className={`h-full ${
+                    isLowQuota ? 'bg-red-500' : 'bg-[#8976EA]'
+                  }`}
+                  style={{
+                    width: `${quotaPercentage}%`,
+                  }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Resource specific limits */}
+          {rateLimit.resources && (
+            <div className='mb-3 p-2 bg-[#191919] rounded'>
+              <div className='font-medium mb-1'>Resource Limits</div>
+              <div className='grid grid-cols-2 gap-x-4 gap-y-1'>
+                <div>Search API:</div>
+                <div className='font-mono'>
+                  {rateLimit.resources.search.remaining} /{' '}
+                  {rateLimit.resources.search.limit}
+                </div>
+
+                <div>GraphQL API:</div>
+                <div className='font-mono'>
+                  {rateLimit.resources.graphql.remaining} /{' '}
+                  {rateLimit.resources.graphql.limit}
+                </div>
+              </div>
+            </div>
           )}
 
-          <div className='mt-2 text-xs text-gray-400'>
-            {rateLimit.hasClientToken && rateLimit.hasServerToken
-              ? 'Using both personal and server tokens for increased rate limits'
-              : rateLimit.hasClientToken
-              ? 'Using your personal GitHub token'
-              : rateLimit.hasServerToken
-              ? 'Using server GitHub token'
-              : 'No token found. Limited to 60 requests/hour'}
-          </div>
+          <div className='mt-2 text-xs text-gray-400'>{tokenMessage}</div>
         </>
       )}
     </div>

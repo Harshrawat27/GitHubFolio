@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Repository } from '@/types';
 import { StarIcon, GitForkIcon } from '@/components/Icons';
+import { createGitHubHeaders } from '@/lib/githubToken';
 
 interface PinnedReposProps {
   username: string;
@@ -28,13 +29,19 @@ export default function PinnedRepos({
         // Since GitHub API doesn't have an endpoint for pinned repositories,
         // we'll use a combination of approaches to approximate them:
 
+        // Use createGitHubHeaders to get headers with the appropriate token
+        const headers = createGitHubHeaders();
+
         // 1. Use the GraphQL API if a token is available (more accurate)
-        if (token) {
+        // Get token from environment or client
+        const activeToken = process.env.GITHUB_ACCESS_TOKEN || token;
+
+        if (activeToken) {
           try {
             const response = await fetch('https://api.github.com/graphql', {
               method: 'POST',
               headers: {
-                Authorization: `bearer ${token}`,
+                Authorization: `bearer ${activeToken}`,
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
@@ -44,14 +51,6 @@ export default function PinnedRepos({
                       nodes {
                         ... on Repository {
                           name
-                          description
-                          url
-                          stargazerCount
-                          forkCount
-                          primaryLanguage {
-                            name
-                            color
-                          }
                         }
                       }
                     }
@@ -118,6 +117,8 @@ export default function PinnedRepos({
       fetchPinnedRepos();
     }
   }, [username, repos, token]);
+
+  // Rest of the component...
 
   if (pinnedRepos.length === 0 && !loading) {
     return null;

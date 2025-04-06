@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { GitHubUser, Repository } from '@/types';
 import Image from 'next/image';
+import { createGitHubHeaders } from '@/lib/githubToken';
 
 interface SimilarProfilesProps {
   user: GitHubUser;
@@ -35,11 +36,8 @@ export default function SimilarProfiles({
       setError('');
 
       try {
-        // Create headers with token if available
-        const headers: HeadersInit = {};
-        if (token) {
-          headers.Authorization = `token ${token}`;
-        }
+        // Use createGitHubHeaders to get headers with the appropriate token
+        const headers = createGitHubHeaders();
 
         // Get languages used by the current user
         const userLanguages = new Set<string>();
@@ -245,6 +243,8 @@ export default function SimilarProfiles({
       findSimilarProfiles();
     }
   }, [user, repos, token]);
+
+  // Rest of the component...
 
   return (
     <div className='card'>

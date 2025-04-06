@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Repository } from '@/types';
+import { createGitHubHeaders } from '@/lib/githubToken';
 
 export default function ProjectsPage() {
   const params = useParams();
@@ -37,11 +38,8 @@ export default function ProjectsPage() {
       setError('');
 
       try {
-        // Create headers with token if available
-        const headers: HeadersInit = {};
-        if (token) {
-          headers.Authorization = `token ${token}`;
-        }
+        // Use createGitHubHeaders to get headers with the appropriate token
+        const headers = createGitHubHeaders();
 
         // Fetch all repositories
         const reposResponse = await fetch(
@@ -107,6 +105,8 @@ export default function ProjectsPage() {
 
     setFilteredRepos(result);
   }, [repos, filter, sortBy, searchQuery]);
+
+  // Rest of the component...
 
   // Helper function to get color for language
   const getLanguageColor = (language: string | null): string => {

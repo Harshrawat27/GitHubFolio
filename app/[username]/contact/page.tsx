@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import BottomNavigation from '@/components/BottomNavigation';
 import { GitHubUser } from '@/types';
+import { createGitHubHeaders } from '@/lib/githubToken';
 
 export default function ContactPage() {
   const params = useParams();
@@ -33,11 +34,8 @@ export default function ContactPage() {
       setError('');
 
       try {
-        // Create headers with token if available
-        const headers: HeadersInit = {};
-        if (token) {
-          headers.Authorization = `token ${token}`;
-        }
+        // Use createGitHubHeaders to get headers with the appropriate token
+        const headers = createGitHubHeaders();
 
         // Fetch user profile data
         const userResponse = await fetch(
@@ -65,6 +63,8 @@ export default function ContactPage() {
 
     fetchUserData();
   }, [username, token]);
+
+  // Rest of the component...
 
   if (loading) {
     return (

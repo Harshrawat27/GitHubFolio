@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Repository } from '@/types';
 import { GitCommitIcon } from '@/components/Icons';
 import Image from 'next/image';
+import { createGitHubHeaders } from '@/lib/githubToken';
 
 interface CommitHistoryProps {
   repos: Repository[];
@@ -50,11 +51,8 @@ export default function CommitHistory({
           return;
         }
 
-        // Create headers with token if available
-        const headers: HeadersInit = {};
-        if (token) {
-          headers.Authorization = `token ${token}`;
-        }
+        // Use createGitHubHeaders to get headers with the appropriate token
+        const headers = createGitHubHeaders();
 
         // Create a combined approach - try to get some actual commits but also fallback to repo data
         const fallbackCommits: Commit[] = repos.slice(0, 5).map((repo) => ({
@@ -86,9 +84,7 @@ export default function CommitHistory({
             // Try to get commits without author filter first to see if repo has any commits
             const response = await fetch(
               `https://api.github.com/repos/${repo.full_name}/commits?per_page=5`,
-              {
-                headers,
-              }
+              { headers }
             );
 
             if (!response.ok) {
@@ -148,6 +144,8 @@ export default function CommitHistory({
       setLoading(false);
     }
   }, [repos, username, token]);
+
+  // Rest of the component...
 
   // Format date
   const formatDate = (dateString: string) => {
