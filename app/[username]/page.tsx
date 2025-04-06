@@ -9,7 +9,6 @@ import FeaturedProjects from '@/components/FeaturedProjects';
 import AboutMe from '@/components/AboutMe';
 import BottomNavigation from '@/components/BottomNavigation';
 import { createGitHubHeaders } from '@/lib/githubToken';
-// import ContributionGraph from '@/components/ContributionGraph'; // Import the ContributionGraph component
 
 export default function ProfilePage() {
   const params = useParams();
@@ -18,7 +17,7 @@ export default function ProfilePage() {
 
   const [userData, setUserData] = useState<GitHubUser | null>(null);
   const [repos, setRepos] = useState<Repository[]>([]);
-  const [featuredRepos, setFeaturedRepos] = useState<Repository[]>([]);
+  const [pinnedRepos, setPinnedRepos] = useState<Repository[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [token, setToken] = useState<string | null>(null);
@@ -66,74 +65,98 @@ export default function ProfilePage() {
         const reposData = await reposResponse.json();
         setRepos(reposData);
 
-        // Get pinned repositories if token is available
-        let pinnedRepos: Repository[] = [];
-
-        // Try to use GraphQL API for pinned repos if we have a token
-        const activeToken = process.env.GITHUB_ACCESS_TOKEN || token;
-        if (activeToken) {
-          try {
-            const response = await fetch('https://api.github.com/graphql', {
-              method: 'POST',
-              headers: {
-                Authorization: `bearer ${activeToken}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                query: `{
-                  user(login: "${username}") {
-                    pinnedItems(first: 6, types: REPOSITORY) {
-                      nodes {
-                        ... on Repository {
+        // Fetch pinned repositories using GraphQL (with our GitHub token)
+        try {
+          const query = {
+            query: `
+              query {
+                user(login: "${username}") {
+                  pinnedItems(first: 6, types: REPOSITORY) {
+                    nodes {
+                      ... on Repository {
+                        name
+                        description
+                        url
+                        stargazerCount
+                        forkCount
+                        primaryLanguage {
                           name
+                          color
+                        }
+                        repositoryTopics(first: 5) {
+                          nodes {
+                            topic {
+                              name
+                            }
+                          }
+                        }
+                        owner {
+                          login
+                          avatarUrl
                         }
                       }
                     }
                   }
-                }`,
-              }),
-            });
+                }
+              }
+            `,
+          };
 
-            const result = await response.json();
+          // Use a GitHub token - either from localStorage or a hardcoded one for demos
+          // Be careful with exposing tokens in production code
+          const token =
+            localStorage.getItem('github_token') ||
+            process.env.NEXT_PUBLIC_GITHUB_TOKEN ||
+            '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';
 
-            if (result.data?.user?.pinnedItems?.nodes) {
-              const graphqlPinned = result.data.user.pinnedItems.nodes;
+          const res = await fetch('https://api.github.com/graphql', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(query),
+          });
 
-              // Find the corresponding full repository data from our repos list
-              pinnedRepos = graphqlPinned
-                .map((pinnedItem: any) => {
-                  const fullRepo = reposData.find(
-                    (repo: Repository) => repo.name === pinnedItem.name
-                  );
-                  return fullRepo || null;
-                })
-                .filter(Boolean);
-            }
-          } catch (error) {
-            console.error('GraphQL error:', error);
-            // Fall back to heuristic method
-          }
-        }
+          const graphqlData = await res.json();
+          const pinnedItems = graphqlData?.data?.user?.pinnedItems?.nodes || [];
 
-        // If we have fewer than 4 pinned repos, supplement with top repos
-        if (pinnedRepos.length < 4) {
-          // Get top repositories (non-forks with most stars)
-          const topRepos = [...reposData]
-            .filter(
-              (repo: Repository) =>
-                !repo.fork &&
-                !pinnedRepos.some((pinnedRepo) => pinnedRepo.id === repo.id)
-            )
-            .sort(
-              (a: Repository, b: Repository) =>
-                b.stargazers_count - a.stargazers_count
-            )
-            .slice(0, 4 - pinnedRepos.length);
+          // Convert GraphQL data format to match our Repository type
+          const formattedPinnedRepos = pinnedItems.map((item: any) => {
+            // Create topic array from the GraphQL response
+            const topics = item.repositoryTopics.nodes.map(
+              (node: any) => node.topic.name
+            );
 
-          setFeaturedRepos([...pinnedRepos, ...topRepos]);
-        } else {
-          // If we have 4 or more pinned repos, just use the first 4
-          setFeaturedRepos(pinnedRepos.slice(0, 4));
+            return {
+              id: item.name, // Use name as ID since we don't have the actual ID
+              name: item.name,
+              full_name: `${item.owner.login}/${item.name}`,
+              html_url: item.url,
+              description: item.description,
+              fork: false, // We don't have this info from the GraphQL response
+              language: item.primaryLanguage?.name || null,
+              stargazers_count: item.stargazerCount,
+              forks_count: item.forkCount,
+              topics: topics,
+              owner: {
+                login: item.owner.login,
+                avatar_url: item.owner.avatarUrl,
+                html_url: `https://github.com/${item.owner.login}`,
+              },
+            };
+          });
+
+          // Set pinned repos state
+          setPinnedRepos(formattedPinnedRepos);
+        } catch (error) {
+          console.error('Failed to fetch pinned repos with GraphQL:', error);
+          // Fallback: Just use regular repos sorted by stars
+          const fallbackRepos = [...reposData]
+            .filter((repo) => !repo.fork)
+            .sort((a, b) => b.stargazers_count - a.stargazers_count)
+            .slice(0, 6);
+          setPinnedRepos(fallbackRepos);
         }
 
         // Extract skills from languages
@@ -154,6 +177,7 @@ export default function ProfilePage() {
         }
         setUserData(null);
         setRepos([]);
+        setPinnedRepos([]);
       } finally {
         setLoading(false);
       }
@@ -161,8 +185,6 @@ export default function ProfilePage() {
 
     fetchGitHubProfile();
   }, [username, token]);
-
-  // Rest of the component...
 
   if (loading) {
     return (
@@ -296,11 +318,8 @@ export default function ProfilePage() {
       {/* About Me Section */}
       <AboutMe user={userData} />
 
-      {/* Contribution Graph - Add the component here */}
-      {/* <ContributionGraph username={username} token={token} /> */}
-
-      {/* Featured Projects */}
-      <FeaturedProjects repos={featuredRepos} />
+      {/* Featured Projects Section - Using pinned repositories */}
+      <FeaturedProjects repos={pinnedRepos} />
 
       {/* Bottom Navigation Bar */}
       <BottomNavigation username={username} />

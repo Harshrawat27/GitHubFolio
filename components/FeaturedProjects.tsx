@@ -1,3 +1,4 @@
+// components/FeaturedProjects.tsx (Updated version)
 import Link from 'next/link';
 import { Repository } from '@/types';
 
@@ -7,7 +8,44 @@ interface FeaturedProjectsProps {
 
 export default function FeaturedProjects({ repos }: FeaturedProjectsProps) {
   if (repos.length === 0) {
-    return null;
+    // Instead of returning null, show a message
+    return (
+      <section className='w-full mb-16'>
+        <div className='flex justify-between items-center mb-6'>
+          <h2 className='text-2xl font-bold'>Pinned Projects</h2>
+        </div>
+
+        <div className='bg-[#111111] border border-[#222222] rounded-lg p-8 text-center'>
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            className='h-12 w-12 mx-auto text-[#333333] mb-4'
+            fill='none'
+            viewBox='0 0 24 24'
+            stroke='currentColor'
+          >
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth={2}
+              d='M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10'
+            />
+          </svg>
+          <h3 className='text-xl font-medium mb-2'>No pinned projects found</h3>
+          <p className='text-gray-400 max-w-md mx-auto'>
+            To showcase your best work here, pin repositories on your GitHub
+            profile.
+          </p>
+          <a
+            href='https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/customizing-your-profile/pinning-items-to-your-profile'
+            target='_blank'
+            rel='noopener noreferrer'
+            className='mt-4 inline-block text-[#8976EA] hover:underline'
+          >
+            Learn how to pin repositories
+          </a>
+        </div>
+      </section>
+    );
   }
 
   // Helper function to get color for language
@@ -41,7 +79,7 @@ export default function FeaturedProjects({ repos }: FeaturedProjectsProps) {
   return (
     <section className='w-full mb-16'>
       <div className='flex justify-between items-center mb-6'>
-        <h2 className='text-2xl font-bold'>Featured Projects</h2>
+        <h2 className='text-2xl font-bold'>Pinned Projects</h2>
         <Link
           href={`/${repos[0]?.owner?.login}/projects`}
           className='text-sm text-[#8976EA] hover:underline flex items-center'

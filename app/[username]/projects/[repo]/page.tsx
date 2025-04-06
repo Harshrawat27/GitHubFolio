@@ -136,35 +136,59 @@ export default function ProjectDetailsPage() {
           // Continue without README
         }
 
-        // Try to fetch GitHubFolio.md for project view
-        try {
-          const projectReadmeResponse = await fetch(
-            `https://api.github.com/repos/${username}/${repoName}/contents/GitHubFolio.md`,
-            { headers }
-          );
+        // Try to fetch GitHubFolio.md for project view with multiple case variations and locations
+        const tryFetchProjectReadme = async (path: any) => {
+          try {
+            const projectReadmeResponse = await fetch(
+              `https://api.github.com/repos/${username}/${repoName}/contents/${path}`,
+              { headers }
+            );
 
-          if (projectReadmeResponse.ok) {
-            const projectReadmeData = await projectReadmeResponse.json();
-            // Content is base64 encoded
-            const content = projectReadmeData.content;
-            const byteCharacters = atob(content.replace(/\s/g, ''));
-            const byteNumbers = new Array(byteCharacters.length);
+            if (projectReadmeResponse.ok) {
+              const projectReadmeData = await projectReadmeResponse.json();
+              // Content is base64 encoded
+              const content = projectReadmeData.content;
+              const byteCharacters = atob(content.replace(/\s/g, ''));
+              const byteNumbers = new Array(byteCharacters.length);
 
-            for (let i = 0; i < byteCharacters.length; i++) {
-              byteNumbers[i] = byteCharacters.charCodeAt(i);
+              for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+              }
+
+              const byteArray = new Uint8Array(byteNumbers);
+              const decodedContent = new TextDecoder('utf-8').decode(byteArray);
+
+              setProjectReadme(decodedContent);
+
+              // If we have a project readme, default to project view
+              setViewMode('project');
+              return true;
             }
-
-            const byteArray = new Uint8Array(byteNumbers);
-            const decodedContent = new TextDecoder('utf-8').decode(byteArray);
-
-            setProjectReadme(decodedContent);
-
-            // If we have a project readme, default to project view
-            setViewMode('project');
+            return false;
+          } catch (error) {
+            console.error(`Error fetching ${path}:`, error);
+            return false;
           }
-        } catch (error) {
-          console.error('Error fetching GitHubFolio.md:', error);
-          // Continue without project readme
+        };
+
+        // Try different variations of the project file name and location
+        const fileNameVariations = [
+          'GitHubFolio.md',
+          'GITHUBFOLIO.md',
+          'githubfolio.md',
+          'docs/GitHubFolio.md',
+          'docs/githubfolio.md',
+          '.github/GitHubFolio.md',
+          '.github/githubfolio.md',
+          'PROJECT.md',
+          'project.md',
+          'docs/PROJECT.md',
+          'docs/project.md',
+        ];
+
+        for (const fileName of fileNameVariations) {
+          const found = await tryFetchProjectReadme(fileName);
+          if (found) break;
         }
 
         // Fetch contributors
@@ -212,8 +236,6 @@ export default function ProjectDetailsPage() {
 
     fetchRepoData();
   }, [username, repoName, token]);
-
-  // Rest of the component...
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -558,64 +580,101 @@ export default function ProjectDetailsPage() {
             </div>
           </div>
 
+          {/* Debug message if no documentation is available for selected view */}
+          {((viewMode === 'technical' && !readme) ||
+            (viewMode === 'project' && !projectReadme)) && (
+            <div className='bg-[#111111] border border-[#222222] rounded-lg p-6 mb-4'>
+              <p className='text-gray-400 text-center'>
+                {viewMode === 'technical'
+                  ? 'No README.md found for this repository.'
+                  : 'No GitHubFolio.md or PROJECT.md found for this repository.'}
+              </p>
+              <p className='text-xs text-gray-500 text-center mt-2'>
+                {viewMode === 'project' &&
+                  'Create a GitHubFolio.md file in your repository to show a project-focused view.'}
+              </p>
+            </div>
+          )}
+
           <div className='bg-[#111111] border border-[#222222] rounded-lg p-6 prose prose-invert prose-a:text-[#8976EA] prose-headings:border-b prose-headings:border-[#222222] prose-headings:pb-2 max-w-none'>
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeHighlight]}
-              components={{
-                img: ({ node, ...props }) => (
-                  <img
-                    {...props}
-                    src={transformImageUri(props.src || '')}
-                    className='max-w-full my-4 rounded-md'
-                    alt={props.alt || ''}
-                  />
-                ),
-                a: ({ node, ...props }) => (
-                  <a
-                    {...props}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='hover:underline'
-                  />
-                ),
-                pre: ({ node, ...props }: any) => {
-                  // We need to extract the actual code as a string
-                  const [copied, setCopied] = useState(false);
+            {(viewMode === 'technical' && readme) ||
+            (viewMode === 'project' && projectReadme) ? (
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeHighlight]}
+                components={{
+                  img: ({ node, ...props }) => (
+                    <img
+                      {...props}
+                      src={transformImageUri(props.src || '')}
+                      className='max-w-full my-4 rounded-md'
+                      alt={props.alt || ''}
+                    />
+                  ),
+                  a: ({ node, ...props }) => (
+                    <a
+                      {...props}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='hover:underline'
+                    />
+                  ),
+                  pre: ({ node, ...props }: any) => {
+                    // We need to extract the actual code as a string
+                    const [copied, setCopied] = useState(false);
 
-                  // Get reference to the pre element
-                  const preRef = React.useRef<HTMLPreElement>(null);
+                    // Get reference to the pre element
+                    const preRef = React.useRef<HTMLPreElement>(null);
 
-                  const copyToClipboard = () => {
-                    if (preRef.current) {
-                      // Get the text content from the pre element
-                      const codeElement = preRef.current.querySelector('code');
-                      const textToCopy = codeElement?.textContent || '';
+                    const copyToClipboard = () => {
+                      if (preRef.current) {
+                        // Get the text content from the pre element
+                        const codeElement =
+                          preRef.current.querySelector('code');
+                        const textToCopy = codeElement?.textContent || '';
 
-                      // Copy to clipboard
-                      navigator.clipboard.writeText(textToCopy);
+                        // Copy to clipboard
+                        navigator.clipboard.writeText(textToCopy);
 
-                      // Show copied confirmation
-                      setCopied(true);
-                      setTimeout(() => setCopied(false), 2000);
-                    }
-                  };
+                        // Show copied confirmation
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }
+                    };
 
-                  return (
-                    <div className='relative group'>
-                      <pre
-                        {...props}
-                        ref={preRef}
-                        className='bg-[#191919] p-4 rounded-md overflow-x-auto text-sm my-4'
-                      />
-                      <button
-                        onClick={copyToClipboard}
-                        className='absolute top-2 right-2 bg-[#333333] hover:bg-[#444444] p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity'
-                        title='Copy code'
-                        aria-label='Copy code to clipboard'
-                      >
-                        {copied ? (
-                          <>
+                    return (
+                      <div className='relative group'>
+                        <pre
+                          {...props}
+                          ref={preRef}
+                          className='bg-[#191919] p-4 rounded-md overflow-x-auto text-sm my-4'
+                        />
+                        <button
+                          onClick={copyToClipboard}
+                          className='absolute top-2 right-2 bg-[#333333] hover:bg-[#444444] p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity'
+                          title='Copy code'
+                          aria-label='Copy code to clipboard'
+                        >
+                          {copied ? (
+                            <>
+                              <svg
+                                xmlns='http://www.w3.org/2000/svg'
+                                width='16'
+                                height='16'
+                                viewBox='0 0 24 24'
+                                fill='none'
+                                stroke='currentColor'
+                                strokeWidth='2'
+                                strokeLinecap='round'
+                                strokeLinejoin='round'
+                              >
+                                <polyline points='20 6 9 17 4 12'></polyline>
+                              </svg>
+                              <span className='absolute top-10 right-0 bg-[#333333] text-white text-xs py-1 px-2 rounded'>
+                                Copied!
+                              </span>
+                            </>
+                          ) : (
                             <svg
                               xmlns='http://www.w3.org/2000/svg'
                               width='16'
@@ -627,69 +686,72 @@ export default function ProjectDetailsPage() {
                               strokeLinecap='round'
                               strokeLinejoin='round'
                             >
-                              <polyline points='20 6 9 17 4 12'></polyline>
+                              <rect
+                                x='9'
+                                y='9'
+                                width='13'
+                                height='13'
+                                rx='2'
+                                ry='2'
+                              ></rect>
+                              <path d='M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1'></path>
                             </svg>
-                            <span className='absolute top-10 right-0 bg-[#333333] text-white text-xs py-1 px-2 rounded'>
-                              Copied!
-                            </span>
-                          </>
-                        ) : (
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            width='16'
-                            height='16'
-                            viewBox='0 0 24 24'
-                            fill='none'
-                            stroke='currentColor'
-                            strokeWidth='2'
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                          >
-                            <rect
-                              x='9'
-                              y='9'
-                              width='13'
-                              height='13'
-                              rx='2'
-                              ry='2'
-                            ></rect>
-                            <path d='M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1'></path>
-                          </svg>
-                        )}
-                      </button>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  },
+                  code: ({ node, inline, ...props }: any) =>
+                    inline ? (
+                      <code
+                        {...props}
+                        className='bg-[#191919] px-1 py-0.5 rounded text-sm'
+                      />
+                    ) : (
+                      <code {...props} />
+                    ),
+                  table: ({ node, ...props }) => (
+                    <div className='overflow-x-auto my-4'>
+                      <table {...props} className='border-collapse w-full' />
                     </div>
-                  );
-                },
-                code: ({ node, inline, ...props }: any) =>
-                  inline ? (
-                    <code
-                      {...props}
-                      className='bg-[#191919] px-1 py-0.5 rounded text-sm'
-                    />
-                  ) : (
-                    <code {...props} />
                   ),
-                table: ({ node, ...props }) => (
-                  <div className='overflow-x-auto my-4'>
-                    <table {...props} className='border-collapse w-full' />
-                  </div>
-                ),
-                th: ({ node, ...props }) => (
-                  <th
-                    {...props}
-                    className='border border-[#333333] px-4 py-2 text-left'
+                  th: ({ node, ...props }) => (
+                    <th
+                      {...props}
+                      className='border border-[#333333] px-4 py-2 text-left'
+                    />
+                  ),
+                  td: ({ node, ...props }) => (
+                    <td
+                      {...props}
+                      className='border border-[#333333] px-4 py-2'
+                    />
+                  ),
+                }}
+              >
+                {viewMode === 'technical' ? readme : projectReadme}
+              </ReactMarkdown>
+            ) : (
+              <div className='flex flex-col items-center justify-center py-8'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-16 w-16 text-gray-700 mb-4'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={1.5}
+                    d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
                   />
-                ),
-                td: ({ node, ...props }) => (
-                  <td
-                    {...props}
-                    className='border border-[#333333] px-4 py-2'
-                  />
-                ),
-              }}
-            >
-              {viewMode === 'technical' ? readme : projectReadme}
-            </ReactMarkdown>
+                </svg>
+                <p className='text-gray-500'>
+                  No documentation content available
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}
