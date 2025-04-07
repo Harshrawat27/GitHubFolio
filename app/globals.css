@@ -62,7 +62,8 @@ body {
   }
 
   .title-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#8976EA] to-[#A595F0];
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(to right, var(--text-primary), #8976ea);
   }
 
   .card {

@@ -34,7 +34,7 @@ export default function HomePage() {
             <h1 className='text-3xl font-bold font-mono'>GitHubFolio</h1>
           </div>
 
-          <h2 className='text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-white to-[#8976EA] bg-clip-text text-transparent'>
+          <h2 className='text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[#8976EA]'>
             Beautiful Developer <br />
             Portfolio in Seconds
           </h2>
