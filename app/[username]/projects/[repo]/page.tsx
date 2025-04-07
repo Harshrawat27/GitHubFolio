@@ -127,6 +127,8 @@ export default function ProjectDetailsPage() {
           console.error('Error fetching README:', error);
         }
 
+        // Commented out fetching logic for GitHubFolio.md to improve load time
+        /*
         // Try fetching GitHubFolio.md with multiple variations
         const tryFetchProjectReadme = async (path: string) => {
           try {
@@ -173,6 +175,7 @@ export default function ProjectDetailsPage() {
           const found = await tryFetchProjectReadme(fileName);
           if (found) break;
         }
+        */
 
         // Fetch contributors
         try {
@@ -424,7 +427,7 @@ export default function ProjectDetailsPage() {
                 viewBox='0 0 20 20'
                 fill='currentColor'
               >
-                <path d='M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z' />
+                <path d='M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3 .921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784 .57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81 .588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z' />
               </svg>
               <span>{repoData.stargazers_count} stars</span>
             </div>
@@ -583,7 +586,8 @@ export default function ProjectDetailsPage() {
                 >
                   Technical
                 </button>
-                <button
+                {/* Commented out Project tab to disable GitHubFolio.md switch */}
+                {/* <button
                   onClick={() => setViewMode('project')}
                   className={`px-3 py-1.5 text-sm transition-colors ${
                     viewMode === 'project'
@@ -593,7 +597,7 @@ export default function ProjectDetailsPage() {
                   disabled={!projectReadme}
                 >
                   Project
-                </button>
+                </button> */}
               </div>
             </div>
             <div className='card bg-[var(--card-bg)]'>
@@ -758,12 +762,13 @@ export default function ProjectDetailsPage() {
                           ? 'No README.md found for this repository.'
                           : 'No GitHubFolio.md found for this repository.'}
                       </p>
-                      {viewMode === 'project' && (
+                      {/* Commented out additional message for project mode */}
+                      {/* {viewMode === 'project' && (
                         <p className='text-xs mt-2'>
                           Create a GitHubFolio.md file in your repository to
                           show a project-focused view.
                         </p>
-                      )}
+                      )} */}
                     </div>
                   )}
                 </div>
