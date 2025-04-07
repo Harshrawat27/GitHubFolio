@@ -1,6 +1,7 @@
 // components/FeaturedProjects.tsx
 import Link from 'next/link';
 import { Repository } from '@/types';
+import { motion } from 'framer-motion';
 
 interface FeaturedProjectsProps {
   repos: Repository[];
@@ -10,6 +11,29 @@ export default function FeaturedProjects({ repos }: FeaturedProjectsProps) {
   if (repos.length === 0) {
     return null;
   }
+
+  // Animation variants for staggered reveal
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: 'easeOut',
+      },
+    },
+  };
 
   // Helper function to get color for language
   const getLanguageColor = (language: string | null): string => {
@@ -40,21 +64,43 @@ export default function FeaturedProjects({ repos }: FeaturedProjectsProps) {
   };
 
   return (
-    <div className='grid grid-cols-1 md:grid-cols-2 gap-6 relative'>
+    <motion.div
+      className='grid grid-cols-1 md:grid-cols-2 gap-6 relative'
+      variants={containerVariants}
+      initial='hidden'
+      animate='visible'
+    >
       {repos.map((repo, index) => (
-        <div key={repo.id} className='card hover:scale-[1.02] group'>
+        <motion.div
+          key={repo.id}
+          className='card hover:scale-[1.02] group'
+          variants={itemVariants}
+        >
           {/* Project number tag */}
-          <div className='absolute top-4 right-4 text-xs font-mono text-[var(--text-secondary)] opacity-70'>
+          <motion.div
+            className='absolute top-4 right-4 text-xs font-mono text-[var(--text-secondary)] opacity-70'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.7 }}
+            transition={{ delay: 0.3 + index * 0.1 }}
+          >
             #{String(index + 1).padStart(2, '0')}
-          </div>
+          </motion.div>
 
-          <div className='mb-2'>
+          <motion.div
+            className='mb-2'
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 + index * 0.1 }}
+          >
             <div className='flex items-center gap-2'>
               {repo.language && (
-                <span
+                <motion.span
                   className='h-3 w-3 rounded-full'
                   style={{ backgroundColor: getLanguageColor(repo.language) }}
-                ></span>
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
+                ></motion.span>
               )}
               <Link
                 href={`/${repo.owner.login}/projects/${repo.name}`}
@@ -81,14 +127,24 @@ export default function FeaturedProjects({ repos }: FeaturedProjectsProps) {
                 </span>
               )}
             </div>
-          </div>
+          </motion.div>
 
-          <p className='text-[var(--text-secondary)] text-sm mb-5 line-clamp-2 min-h-[40px]'>
+          <motion.p
+            className='text-[var(--text-secondary)] text-sm mb-5 line-clamp-2 min-h-[40px]'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 + index * 0.1 }}
+          >
             {repo.description ||
               `A ${repo.language || 'code'} repository by ${repo.owner.login}`}
-          </p>
+          </motion.p>
 
-          <div className='flex items-center justify-between mt-auto'>
+          <motion.div
+            className='flex items-center justify-between mt-auto'
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 + index * 0.1 }}
+          >
             <div className='flex items-center gap-4'>
               <div className='flex items-center gap-1.5'>
                 <svg
@@ -166,32 +222,50 @@ export default function FeaturedProjects({ repos }: FeaturedProjectsProps) {
                 </a>
               )}
             </div>
-          </div>
+          </motion.div>
 
           {/* Project tags if available */}
           {repo.topics && repo.topics.length > 0 && (
-            <div className='flex flex-wrap gap-2 mt-4 pt-4 border-t border-[var(--card-border)]'>
+            <motion.div
+              className='flex flex-wrap gap-2 mt-4 pt-4 border-t border-[var(--card-border)]'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 + index * 0.1 }}
+            >
               {repo.topics.slice(0, 3).map((topic) => (
-                <span
+                <motion.span
                   key={topic}
                   className='px-2 py-1 bg-[var(--background)] rounded-full text-xs text-[var(--text-secondary)]'
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.9 + index * 0.1 }}
                 >
                   {topic}
-                </span>
+                </motion.span>
               ))}
               {repo.topics.length > 3 && (
-                <span className='px-2 py-1 bg-[var(--background)] rounded-full text-xs text-[var(--text-secondary)]'>
+                <motion.span
+                  className='px-2 py-1 bg-[var(--background)] rounded-full text-xs text-[var(--text-secondary)]'
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.9 + index * 0.1 }}
+                >
                   +{repo.topics.length - 3} more
-                </span>
+                </motion.span>
               )}
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       ))}
 
       {/* View all link */}
       {repos.length > 0 && (
-        <div className='md:col-span-2 text-center mt-4'>
+        <motion.div
+          className='md:col-span-2 text-center mt-4'
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 + repos.length * 0.1 }}
+        >
           <Link
             href={`/${repos[0]?.owner?.login}/projects`}
             className='inline-flex items-center justify-center px-4 py-2 border border-[var(--card-border)] rounded-lg text-sm text-[var(--text-primary)] hover:bg-[var(--primary)] hover:text-white hover:border-[var(--primary)] transition-colors group'
@@ -210,8 +284,8 @@ export default function FeaturedProjects({ repos }: FeaturedProjectsProps) {
               />
             </svg>
           </Link>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

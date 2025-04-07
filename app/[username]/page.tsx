@@ -10,6 +10,7 @@ import FeaturedProjects from '@/components/FeaturedProjects';
 import SideNav from '@/components/SideNav';
 import AboutMeWithReadme from '@/components/AboutMeWithReadme';
 import { createGitHubHeaders } from '@/lib/githubToken';
+import { motion } from 'framer-motion';
 
 export default function ProfilePage() {
   const params = useParams();
@@ -272,27 +273,57 @@ export default function ProfilePage() {
 
       <div className='flex flex-col items-center pt-12 pb-32 relative'>
         {/* Date indicator */}
-        <div className='date-marker top-8 right-0'>
+        <motion.div
+          className='date-marker top-8 right-0'
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           {new Date().toISOString().split('T')[0]}
-        </div>
+        </motion.div>
 
         {/* Profile Header */}
-        <div className='flex flex-col items-center mb-16 relative'>
-          <div className='w-32 h-32 rounded-full overflow-hidden border-2 border-[var(--primary)] p-1 mb-6 relative'>
+        <motion.div
+          className='flex flex-col items-center mb-16 relative'
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.div
+            className='w-32 h-32 rounded-full overflow-hidden border-2 border-[var(--primary)] p-1 mb-6 relative'
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
             <Image
               src={userData.avatar_url}
               alt={userData.name || userData.login}
               fill
               className='rounded-full object-cover'
             />
-            <div className='absolute -z-10 w-40 h-40 bg-[var(--primary)] opacity-20 blur-xl'></div>
-          </div>
+            <motion.div
+              className='absolute -z-10 w-40 h-40 bg-[var(--primary)] opacity-20 blur-xl'
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+            ></motion.div>
+          </motion.div>
 
-          <h1 className='text-4xl font-bold mb-2 title-gradient'>
+          <motion.h1
+            className='text-4xl font-bold mb-2 title-gradient'
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
             {userData.name || userData.login}
-          </h1>
+          </motion.h1>
 
-          <div className='font-mono text-[var(--text-secondary)] mb-6 flex items-center'>
+          <motion.div
+            className='font-mono text-[var(--text-secondary)] mb-6 flex items-center'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
             <span>@{userData.login}</span>
             <span className='mx-2 text-xs'>•</span>
             <span className='text-sm'>
@@ -316,15 +347,25 @@ export default function ProfilePage() {
                 </span>
               )}
             </span>
-          </div>
+          </motion.div>
 
           {userData.bio && (
-            <p className='text-[var(--text-secondary)] text-center max-w-md mb-8'>
+            <motion.p
+              className='text-[var(--text-secondary)] text-center max-w-md mb-8'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+            >
               {userData.bio}
-            </p>
+            </motion.p>
           )}
 
-          <div className='flex space-x-4 mb-6'>
+          <motion.div
+            className='flex space-x-4 mb-6'
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+          >
             {/* Link buttons with hover effects */}
             <a
               href={userData.html_url}
@@ -397,10 +438,15 @@ export default function ProfilePage() {
                 </svg>
               </a>
             )}
-          </div>
+          </motion.div>
 
           {/* Stats display */}
-          <div className='grid grid-cols-4 gap-6 mt-2'>
+          <motion.div
+            className='grid grid-cols-4 gap-6 mt-2'
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
+          >
             <div className='text-center'>
               <p className='text-2xl font-bold text-[var(--primary)]'>
                 {userData.public_repos}
@@ -434,37 +480,60 @@ export default function ProfilePage() {
               </p>
               <p className='text-sm text-[var(--text-secondary)]'>Years</p>
             </div>
-          </div>
+          </motion.div>
 
           {skills.length > 0 && (
-            <div className='flex flex-wrap justify-center gap-2 mt-8'>
-              {skills.map((skill) => (
-                <span
+            <motion.div
+              className='flex flex-wrap justify-center gap-2 mt-8'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
+            >
+              {skills.map((skill, index) => (
+                <motion.span
                   key={skill}
                   className='px-3 py-1 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-full text-xs'
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.8 + index * 0.05, duration: 0.3 }}
                 >
                   {skill}
-                </span>
+                </motion.span>
               ))}
-            </div>
+            </motion.div>
           )}
 
           {/* Index marker */}
-          <div className='absolute -right-4 top-0 text-xs font-mono text-[var(--text-secondary)] opacity-70'>
+          <motion.div
+            className='absolute -right-4 top-0 text-xs font-mono text-[var(--text-secondary)] opacity-70'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.7 }}
+            transition={{ delay: 0.9, duration: 0.5 }}
+          >
             #01
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Contribution Graph - Hidden as requested */}
         {/* AI Analysis - Hidden as requested */}
 
         {/* Featured Projects Section */}
-        <div className='w-full mb-16'>
+        <motion.div
+          className='w-full mb-16'
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.0, duration: 0.5 }}
+        >
           <h2 className='section-heading'>Featured Projects</h2>
           <div className='mb-6'></div>
 
           {repos.length === 0 ? (
-            <div className='card text-center py-16'>
+            <motion.div
+              className='card text-center py-16'
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
               <div className='w-20 h-20 mx-auto mb-6 bg-[var(--background)] rounded-full flex items-center justify-center'>
                 <svg
                   xmlns='http://www.w3.org/2000/svg'
@@ -514,10 +583,15 @@ export default function ProfilePage() {
                 </svg>
                 Create New Repository
               </a>
-            </div>
+            </motion.div>
           ) : pinnedRepos.length === 0 ? (
             <>
-              <div className='mb-4 flex justify-between items-center'>
+              <motion.div
+                className='mb-4 flex justify-between items-center'
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
                 <p className='text-[var(--text-secondary)] italic'>
                   No pinned repositories found. Showing most active projects.
                 </p>
@@ -541,7 +615,7 @@ export default function ProfilePage() {
                     />
                   </svg>
                 </a>
-              </div>
+              </motion.div>
               <FeaturedProjects
                 repos={repos
                   .filter((repo) => !repo.fork)
@@ -556,17 +630,22 @@ export default function ProfilePage() {
           ) : (
             <FeaturedProjects repos={pinnedRepos} />
           )}
-        </div>
+        </motion.div>
 
         {/* About Me Section with GitHub README.md support */}
-        <div className='w-full mb-16'>
+        <motion.div
+          className='w-full mb-16'
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.1, duration: 0.5 }}
+        >
           <h2 className='section-heading'>About Me</h2>
           <AboutMeWithReadme
             username={username}
             user={userData}
             token={token}
           />
-        </div>
+        </motion.div>
       </div>
     </>
   );

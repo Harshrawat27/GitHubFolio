@@ -8,6 +8,7 @@ import Image from 'next/image';
 import SideNav from '@/components/SideNav';
 import { GitHubUser } from '@/types';
 import { createGitHubHeaders } from '@/lib/githubToken';
+import { motion } from 'framer-motion';
 
 export default function ContactPage() {
   const params = useParams();
@@ -121,12 +122,22 @@ export default function ContactPage() {
 
       <div className='flex flex-col items-center pb-32 pt-12 relative'>
         {/* Date indicator */}
-        <div className='date-marker top-8 right-0'>
+        <motion.div
+          className='date-marker top-8 right-0'
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           {new Date().toISOString().split('T')[0]}
-        </div>
+        </motion.div>
 
         {/* Header */}
-        <div className='w-full flex justify-between items-center mb-12'>
+        <motion.div
+          className='w-full flex justify-between items-center mb-12'
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
           <Link
             href={`/${username}`}
             className='text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2'
@@ -149,36 +160,76 @@ export default function ContactPage() {
           <h1 className='text-xl font-bold title-gradient'>Contact</h1>
 
           {/* Index marker */}
-          <div className='text-xs font-mono text-[var(--text-secondary)] opacity-70'>
+          <motion.div
+            className='text-xs font-mono text-[var(--text-secondary)] opacity-70'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.7 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
             #03
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Profile overview */}
-        <div className='flex flex-col items-center mb-16 relative'>
-          <div className='w-32 h-32 rounded-full overflow-hidden border-2 border-[var(--primary)] p-1 mb-6 relative'>
+        <motion.div
+          className='flex flex-col items-center mb-16 relative'
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.div
+            className='w-32 h-32 rounded-full overflow-hidden border-2 border-[var(--primary)] p-1 mb-6 relative'
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
             <Image
               src={userData.avatar_url}
               alt={userData.name || userData.login}
               fill
               className='rounded-full object-cover'
             />
-            <div className='absolute -z-10 w-40 h-40 bg-[var(--primary)] opacity-20 blur-xl'></div>
-          </div>
+            <motion.div
+              className='absolute -z-10 w-40 h-40 bg-[var(--primary)] opacity-20 blur-xl'
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+            ></motion.div>
+          </motion.div>
 
-          <h2 className='text-3xl font-bold mb-1 title-gradient'>
+          <motion.h2
+            className='text-3xl font-bold mb-1 title-gradient'
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
             {userData.name || userData.login}
-          </h2>
-          <p className='text-[var(--text-secondary)] font-mono mb-4'>
+          </motion.h2>
+          <motion.p
+            className='text-[var(--text-secondary)] font-mono mb-4'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
             {userData.location || 'Developer'}
-          </p>
+          </motion.p>
 
-          <div className='text-sm text-[var(--text-secondary)] max-w-md text-center mb-4'>
+          <motion.div
+            className='text-sm text-[var(--text-secondary)] max-w-md text-center mb-4'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+          >
             {userData.bio ||
               `GitHub developer with ${userData.public_repos} public repositories.`}
-          </div>
+          </motion.div>
 
-          <div className='flex gap-2'>
+          <motion.div
+            className='flex gap-2'
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+          >
             <span className='px-3 py-1 bg-[var(--background)] text-[var(--text-secondary)] rounded-full text-xs font-mono'>
               @{userData.login}
             </span>
@@ -193,23 +244,48 @@ export default function ContactPage() {
                 @{userData.twitter_username}
               </a>
             )}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Contact card - Terminal inspired */}
-        <div className='w-full max-w-lg space-y-4'>
-          <div className='card bg-[var(--card-bg)] border border-[var(--card-border)] overflow-hidden'>
-            <div className='flex items-center gap-2 px-4 py-2 border-b border-[var(--card-border)] bg-opacity-50'>
+        <motion.div
+          className='w-full max-w-lg space-y-4'
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7, duration: 0.5 }}
+        >
+          <motion.div
+            className='card bg-[var(--card-bg)] border border-[var(--card-border)] overflow-hidden'
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+          >
+            <motion.div
+              className='flex items-center gap-2 px-4 py-2 border-b border-[var(--card-border)] bg-opacity-50'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.9, duration: 0.5 }}
+            >
               <div className='w-3 h-3 rounded-full bg-red-500'></div>
               <div className='w-3 h-3 rounded-full bg-yellow-500'></div>
               <div className='w-3 h-3 rounded-full bg-green-500'></div>
               <div className='ml-2 text-xs font-mono text-[var(--text-secondary)]'>
                 contact.md
               </div>
-            </div>
-            <div className='p-4'>
+            </motion.div>
+            <motion.div
+              className='p-4'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.0, duration: 0.5 }}
+            >
               {/* GitHub */}
-              <div className='mb-6'>
+              <motion.div
+                className='mb-6'
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1.1, duration: 0.5 }}
+              >
                 <div className='flex items-start gap-2 mb-2'>
                   <span className='font-mono text-[var(--primary)]'>$</span>
                   <span className='text-[var(--text-secondary)]'>
@@ -243,11 +319,16 @@ export default function ContactPage() {
                     {userData.html_url}
                   </span>
                 </a>
-              </div>
+              </motion.div>
 
               {/* Website/Blog */}
               {userData.blog && (
-                <div className='mb-6'>
+                <motion.div
+                  className='mb-6'
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1.2, duration: 0.5 }}
+                >
                   <div className='flex items-start gap-2 mb-2'>
                     <span className='font-mono text-[var(--primary)]'>$</span>
                     <span className='text-[var(--text-secondary)]'>
@@ -287,12 +368,17 @@ export default function ContactPage() {
                       {userData.blog}
                     </span>
                   </a>
-                </div>
+                </motion.div>
               )}
 
               {/* Twitter */}
               {userData.twitter_username && (
-                <div className='mb-6'>
+                <motion.div
+                  className='mb-6'
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1.3, duration: 0.5 }}
+                >
                   <div className='flex items-start gap-2 mb-2'>
                     <span className='font-mono text-[var(--primary)]'>$</span>
                     <span className='text-[var(--text-secondary)]'>
@@ -326,12 +412,17 @@ export default function ContactPage() {
                       @{userData.twitter_username}
                     </span>
                   </a>
-                </div>
+                </motion.div>
               )}
 
               {/* Email - Only show if available */}
               {userData.email && (
-                <div className='mb-6'>
+                <motion.div
+                  className='mb-6'
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1.4, duration: 0.5 }}
+                >
                   <div className='flex items-start gap-2 mb-2'>
                     <span className='font-mono text-[var(--primary)]'>$</span>
                     <span className='text-[var(--text-secondary)]'>
@@ -364,12 +455,17 @@ export default function ContactPage() {
                       {userData.email}
                     </span>
                   </a>
-                </div>
+                </motion.div>
               )}
 
               {/* Company - if available */}
               {userData.company && (
-                <div className='mb-6'>
+                <motion.div
+                  className='mb-6'
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1.5, duration: 0.5 }}
+                >
                   <div className='flex items-start gap-2 mb-2'>
                     <span className='font-mono text-[var(--primary)]'>$</span>
                     <span className='text-[var(--text-secondary)]'>
@@ -397,12 +493,17 @@ export default function ContactPage() {
 
                     <span className='font-mono'>{userData.company}</span>
                   </div>
-                </div>
+                </motion.div>
               )}
 
               {/* Location - if available */}
               {userData.location && (
-                <div className='mb-6'>
+                <motion.div
+                  className='mb-6'
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1.6, duration: 0.5 }}
+                >
                   <div className='flex items-start gap-2 mb-2'>
                     <span className='font-mono text-[var(--primary)]'>$</span>
                     <span className='text-[var(--text-secondary)]'>
@@ -430,21 +531,31 @@ export default function ContactPage() {
 
                     <span className='font-mono'>{userData.location}</span>
                   </div>
-                </div>
+                </motion.div>
               )}
 
               {/* Blinking cursor */}
-              <div className='flex items-start gap-2'>
+              <motion.div
+                className='flex items-start gap-2'
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.7, duration: 0.5 }}
+              >
                 <span className='font-mono text-[var(--primary)]'>$</span>
                 <span className='text-[var(--text-secondary)] animate-pulse'>
                   █
                 </span>
-              </div>
-            </div>
-          </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
 
           {/* Quick actions */}
-          <div className='mt-8 flex justify-center gap-4'>
+          <motion.div
+            className='mt-8 flex justify-center gap-4'
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.8, duration: 0.5 }}
+          >
             <a
               href={userData.html_url}
               target='_blank'
@@ -489,8 +600,8 @@ export default function ContactPage() {
                 Send Email
               </a>
             )}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </>
   );

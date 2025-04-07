@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",
+    "framer-motion": "^12.6.3",
     "next": "14.0.3",
     "react": "^18",
     "react-dom": "^18",
