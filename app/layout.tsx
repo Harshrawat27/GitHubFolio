@@ -22,6 +22,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'GitHubFolio | Developer Portfolio',
   description: 'Developer portfolio generated from GitHub profile',
+  other: {
+    'google-site-verification': 'nuCl9b7zW3D9gHLY2i0bTUAsUuelQXWQZDKsw0MpaNQ',
+  },
 };
 
 export default function RootLayout({
