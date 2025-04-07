@@ -112,7 +112,7 @@ export default function AboutMeWithReadme({
           </div>
         </div>
         <div className='p-6'>
-          <div className='prose prose-invert dark:prose-invert max-w-none'>
+          <div className='prose max-w-none dark:prose-headings:text-white dark:prose-strong:text-white prose-headings:text-[var(--text-primary)] prose-strong:text-[var(--text-primary)] prose-p:text-[var(--text-secondary)] prose-a:text-[var(--primary)] prose-code:text-[var(--text-primary)] prose-pre:bg-[var(--background)] prose-pre:text-[var(--text-primary)]'>
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{

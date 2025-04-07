@@ -245,3 +245,64 @@ body {
   width: 1.5rem;
   margin-bottom: 0.5rem;
 }
+
+/* Markdown content theming */
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose h4,
+.dark .prose h5,
+.dark .prose h6,
+.dark .prose strong,
+.dark .prose b {
+  color: white;
+}
+
+.dark .prose p,
+.dark .prose li,
+.dark .prose td,
+.dark .prose th {
+  color: var(--text-secondary);
+}
+
+.light .prose h1,
+.light .prose h2,
+.light .prose h3,
+.light .prose h4,
+.light .prose h5,
+.light .prose h6,
+.light .prose strong,
+.light .prose b {
+  color: var(--text-primary);
+}
+
+.light .prose p,
+.light .prose li,
+.light .prose td,
+.light .prose th {
+  color: var(--text-secondary);
+}
+
+.prose code:not(pre code) {
+  color: var(--primary);
+  background-color: var(--card-bg);
+}
+
+.prose pre {
+  background-color: #dedede !important;
+}
+.dark .prose pre {
+  background-color: #3a3a3a !important;
+}
+
+.prose code {
+  color: var(--text-primary);
+}
+.prose a {
+  color: var(--primary);
+}
+
+.prose blockquote {
+  border-left-color: var(--primary);
+  color: var(--text-secondary);
+}
