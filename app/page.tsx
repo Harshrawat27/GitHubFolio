@@ -201,7 +201,7 @@ export default function HomePage() {
       </div>
 
       {/* GitHub API Rate Limit Indicator */}
-      <RateLimitIndicator />
+      {/* <RateLimitIndicator /> */}
     </div>
   );
 }
