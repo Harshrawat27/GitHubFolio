@@ -200,6 +200,19 @@ export default function HomePage() {
         </div>
       </div>
 
+      <a
+        href='https://www.producthunt.com/posts/githubfolio?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-githubfolio'
+        target='_blank'
+      >
+        <img
+          className='fixed bottom-4 left-4'
+          src='https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=950701&theme=neutral&t=1744092436991'
+          alt='GitHubFolio - GitHub&#0032;profile&#0032;to&#0032;portfolio&#0032;website&#0032;in&#0032;3&#0032;seconds&#0046;&#0032;🚀 | Product Hunt'
+          width='250'
+          height='54'
+        />
+      </a>
+
       {/* GitHub API Rate Limit Indicator */}
       {/* <RateLimitIndicator /> */}
     </div>
