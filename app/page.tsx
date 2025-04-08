@@ -195,7 +195,7 @@ export default function HomePage() {
             Visit your portfolio anytime at
           </p>
           <div className='font-mono inline-block bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg px-4 py-2'>
-            githufolio.com/<span className='text-[#8976EA]'>username</span>
+            githubfolio.com/<span className='text-[#8976EA]'>username</span>
           </div>
         </div>
       </div>
