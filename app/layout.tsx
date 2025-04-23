@@ -25,6 +25,22 @@ export const metadata: Metadata = {
   other: {
     'google-site-verification': 'nuCl9b7zW3D9gHLY2i0bTUAsUuelQXWQZDKsw0MpaNQ',
   },
+  openGraph: {
+    title: 'GitHubFolio | Developer Portfolio',
+    description: 'Developer portfolio generated from GitHub profile',
+    url: 'https://www.githubfolio.com/',
+    siteName: 'GitHubFolio',
+    images: [
+      {
+        url: '/githubfolioOG.png',
+        width: 1200,
+        height: 630,
+        alt: 'Opengraph',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({
