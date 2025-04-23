@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     siteName: 'GitHubFolio',
     images: [
       {
-        url: '/githubfolioOG.png',
+        url: 'https://www.githubfolio.com/githubfolioOG.png',
         width: 1200,
         height: 630,
         alt: 'Opengraph',
