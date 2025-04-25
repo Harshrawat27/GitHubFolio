@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { GitHubUser } from '@/types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw'; // Import rehype-raw to handle HTML in markdown
 import { createGitHubHeaders } from '@/lib/githubToken';
 
 interface AboutMeWithReadmeProps {
@@ -99,6 +100,12 @@ export default function AboutMeWithReadme({
     return `${repoBaseUrl}/${cleanSrc}`;
   };
 
+  // Handle HTML content safely
+  const handleHTMLInMarkdown = (html: string) => {
+    // You could add additional safety/sanitization here if needed
+    return html;
+  };
+
   // If we have a GitHub profile README, render it
   if (readmeContent) {
     return (
@@ -115,6 +122,7 @@ export default function AboutMeWithReadme({
           <div className='prose max-w-none dark:prose-headings:text-white dark:prose-strong:text-white prose-headings:text-[var(--text-primary)] prose-strong:text-[var(--text-primary)] prose-p:text-[var(--text-secondary)] prose-a:text-[var(--primary)] prose-code:text-[var(--text-primary)] prose-pre:bg-[var(--background)] prose-pre:text-[var(--text-primary)]'>
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw]} // Add rehypeRaw plugin to process HTML
               components={{
                 img: ({ node, ...props }) => (
                   <img
@@ -141,6 +149,30 @@ export default function AboutMeWithReadme({
                   ) : (
                     <code {...props} />
                   ),
+                // Handle HTML
+                div: ({ node, ...props }) => <div {...props} />,
+                span: ({ node, ...props }) => <span {...props} />,
+                table: ({ node, ...props }) => (
+                  <table
+                    className='border-collapse table-auto w-full'
+                    {...props}
+                  />
+                ),
+                thead: ({ node, ...props }) => <thead {...props} />,
+                tbody: ({ node, ...props }) => <tbody {...props} />,
+                tr: ({ node, ...props }) => <tr {...props} />,
+                td: ({ node, ...props }) => (
+                  <td
+                    className='border border-[var(--card-border)] px-2 py-1'
+                    {...props}
+                  />
+                ),
+                th: ({ node, ...props }) => (
+                  <th
+                    className='border border-[var(--card-border)] px-2 py-1 font-bold'
+                    {...props}
+                  />
+                ),
               }}
             >
               {readmeContent}
